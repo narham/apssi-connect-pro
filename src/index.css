@@ -264,17 +264,100 @@
   }
 
   /* ── Status Color Coding ── */
-  .status-approved {
-    @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1;
+  .status-confirmed {
+    @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5;
+    box-shadow: 0 0 10px hsla(var(--neon-green) / 0.1);
   }
 
   .status-pending {
-    @apply bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1;
+    @apply bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5;
+    box-shadow: 0 0 10px hsla(45, 100%, 50%, 0.1);
   }
 
-  .status-rejected {
-    @apply bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1;
+  .status-flagged {
+    @apply bg-destructive/10 text-destructive border border-destructive/20 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5;
+    box-shadow: 0 0 10px hsla(var(--neon-red) / 0.1);
   }
+
+  .status-scheduled {
+    @apply bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5;
+    box-shadow: 0 0 10px hsla(216, 90%, 60%, 0.1);
+  }
+
+  /* ── Elite Border Effects ── */
+  .neon-border-red {
+    @apply border-destructive/50;
+    box-shadow: 0 0 15px hsla(var(--neon-red) / 0.2), inset 0 0 10px hsla(var(--neon-red) / 0.05);
+  }
+
+  .neon-border-green {
+    @apply border-emerald-500/50;
+    box-shadow: 0 0 15px hsla(var(--neon-green) / 0.2), inset 0 0 10px hsla(var(--neon-green) / 0.05);
+  }
+
+  .neon-border-blue {
+    @apply border-blue-500/50;
+    box-shadow: 0 0 15px hsla(216, 90%, 60%, 0.2), inset 0 0 10px hsla(216, 90%, 60%, 0.05);
+  }
+
+  .neon-border-yellow {
+    @apply border-amber-500/50;
+    box-shadow: 0 0 15px hsla(45, 100%, 50%, 0.2), inset 0 0 10px hsla(45, 100%, 50%, 0.05);
+  }
+
+  /* ── Reflection Overlay ── */
+  .glass-reflection {
+    @apply relative overflow-hidden;
+  }
+
+  .glass-reflection::before {
+    content: "";
+    @apply absolute top-0 left-0 right-0 h-[40%] pointer-events-none z-10 opacity-30;
+    background: linear-gradient(180deg, hsla(var(--glass-bg) / 0.1) 0%, transparent 100%);
+  }
+
+  /* ── Smooth Data Refresh ── */
+  .smooth-refresh {
+    animation: smoothRefresh 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes smoothRefresh {
+    0% { opacity: 0.6; transform: scale(0.995); filter: blur(2px); }
+    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+  }
+
+  /* ── LED Score Display ── */
+  .led-display {
+    @apply font-oswald font-bold tracking-tighter;
+    text-shadow: 0 0 15px hsla(var(--neon-red) / 0.5), 0 0 5px hsla(var(--neon-red) / 0.3);
+  }
+
+  .led-display-green {
+    @apply font-oswald font-bold tracking-tighter;
+    text-shadow: 0 0 15px hsla(var(--neon-green) / 0.5), 0 0 5px hsla(var(--neon-green) / 0.3);
+  }
+
+  .led-display-blue {
+    @apply font-oswald font-bold tracking-tighter;
+    text-shadow: 0 0 15px hsla(216, 90%, 60%, 0.5), 0 0 5px hsla(216, 90%, 60%, 0.3);
+  }
+
+  /* ── Live Indicator Pulse ── */
+  .live-pulse {
+    @apply relative flex h-2.5 w-2.5;
+  }
+
+  .live-pulse::after {
+    content: "";
+    @apply absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75 animate-ping;
+  }
+
+  .live-pulse::before {
+    content: "";
+    @apply relative inline-flex rounded-full h-2.5 w-2.5 bg-destructive;
+    box-shadow: 0 0 8px hsla(var(--neon-red) / 0.6);
+  }
+
 
   .micro-hover:active {
     transform: translateY(0) scale(0.98);

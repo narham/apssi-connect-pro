@@ -24,6 +24,9 @@ import TournamentSetup from "./pages/admin/TournamentSetup";
 import AdminMatchData from "./pages/admin/AdminMatchData";
 import RoleManagement from "./pages/admin/RoleManagement";
 import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
+import MatchReportApproval from "./pages/admin/MatchReportApproval";
+import CompetitionControl from "./pages/admin/CompetitionControl";
+import AgeFraudVerification from "./pages/admin/AgeFraudVerification";
 
 const queryClient = new QueryClient();
 
@@ -53,7 +56,10 @@ const App = () => (
             <Route path="tournament/schedule" element={<TournamentSchedule />} />
             <Route path="tournament/bracket" element={<TournamentBracket />} />
             <Route path="tournament/setup" element={<TournamentSetup />} />
+            <Route path="tournament/control" element={<CompetitionControl />} />
+            <Route path="tournament/age-fraud" element={<AgeFraudVerification />} />
             <Route path="match-data" element={<AdminMatchData />} />
+            <Route path="match-data/approval" element={<MatchReportApproval />} />
             <Route path="roles" element={<RoleManagement />} />
             <Route path="analytics" element={<AnalyticsDashboard />} />
           </Route>

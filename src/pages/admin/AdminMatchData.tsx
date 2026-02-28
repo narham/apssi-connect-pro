@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Search, Filter, Download, Plus, Clock, CheckCircle2, AlertCircle, Eye, Edit, Trash2, Upload, Check, X } from "lucide-react";
+import { ChevronDown, Search, Filter, Download, Plus, Clock, CheckCircle2, AlertCircle, Eye, Edit, Trash2, Upload, Check, X, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import MatchUploadForm from "@/components/admin/MatchUploadForm";
 import CSVUploadModal from "@/components/admin/CSVUploadModal";
 import OverrideModal from "@/components/admin/OverrideModal";
 import AuditLogViewer from "@/components/admin/AuditLogViewer";
+
+import { useNavigate } from "react-router-dom";
 
 // ============================================================================
 // DATA MODELS
@@ -411,6 +413,7 @@ const AdminMatchData = () => {
   const [showCSVUpload, setShowCSVUpload] = useState(false);
   const [showOverrideModal, setShowOverrideModal] = useState(false);
   const [selectedMatchForDetails, setSelectedMatchForDetails] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Filtered matches based on search and filters
   const filteredMatches = matches.filter((match) => {
@@ -802,6 +805,15 @@ const AdminMatchData = () => {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {match.status === "pending_review" && (
+                            <button 
+                              onClick={() => navigate("/admin/match-data/approval")}
+                              className="w-7 h-7 rounded-lg bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors group"
+                              title="Approve Report"
+                            >
+                              <ShieldCheck className="w-4 h-4 text-yellow-500 group-hover:scale-110 transition-transform" />
+                            </button>
+                          )}
                           <button className="w-7 h-7 rounded-lg bg-muted/30 hover:bg-muted/50 flex items-center justify-center transition-colors">
                             <Eye className="w-4 h-4 text-muted-foreground" />
                           </button>

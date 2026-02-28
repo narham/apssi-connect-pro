@@ -12,6 +12,8 @@ import {
   Signal,
   Calendar,
   Trophy,
+  LayoutGrid,
+  ShieldAlert,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -38,11 +40,14 @@ const mainNav = [
   { title: "Scouts", url: "/admin/scouts", icon: Eye },
   { title: "Reports", url: "/admin/reports", icon: FileText },
   { title: "Match Data", url: "/admin/match-data", icon: BarChart3 },
+  { title: "Match Approval", url: "/admin/match-data/approval", icon: ShieldCheck },
   { title: "Analytics", url: "/admin/analytics", icon: Signal },
 ];
 
 const tournamentNav = [
   { title: "Control Center", url: "/admin/tournament", icon: Signal },
+  { title: "Competition Control", url: "/admin/tournament/control", icon: LayoutGrid },
+  { title: "Age Fraud Engine", url: "/admin/tournament/age-fraud", icon: ShieldAlert },
   { title: "Schedule", url: "/admin/tournament/schedule", icon: Calendar },
   { title: "Bracket & Awards", url: "/admin/tournament/bracket", icon: Trophy },
   { title: "Setup", url: "/admin/tournament/setup", icon: Trophy },
