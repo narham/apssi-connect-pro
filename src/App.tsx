@@ -3,7 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./hooks/useAuth";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
 import ECardDashboard from "./pages/ECardDashboard";
 import IdentityVerification from "./pages/IdentityVerification";
 import MatchStatistics from "./pages/MatchStatistics";
@@ -33,41 +36,48 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/e-card" element={<ECardDashboard />} />
-          <Route path="/register" element={<IdentityVerification />} />
-          <Route path="/stats" element={<MatchStatistics />} />
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/e-card" element={<ECardDashboard />} />
+            <Route path="/register" element={<IdentityVerification />} />
+            <Route path="/stats" element={<MatchStatistics />} />
 
-          {/* Admin Panel */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="players" element={<AdminPlayers />} />
-            <Route path="verification" element={<AdminVerification />} />
-            <Route path="statistics" element={<AdminStatistics />} />
-            <Route path="clubs" element={<AdminClubs />} />
-            <Route path="scouts" element={<AdminScouts />} />
-            <Route path="reports" element={<AdminReports />} />
-            <Route path="settings" element={<AdminSettings />} />
-            <Route path="tournament" element={<TournamentDashboard />} />
-            <Route path="tournament/schedule" element={<TournamentSchedule />} />
-            <Route path="tournament/bracket" element={<TournamentBracket />} />
-            <Route path="tournament/setup" element={<TournamentSetup />} />
-            <Route path="tournament/control" element={<CompetitionControl />} />
-            <Route path="tournament/age-fraud" element={<AgeFraudVerification />} />
-            <Route path="match-data" element={<AdminMatchData />} />
-            <Route path="match-data/approval" element={<MatchReportApproval />} />
-            <Route path="roles" element={<RoleManagement />} />
-            <Route path="analytics" element={<AnalyticsDashboard />} />
-          </Route>
+            {/* Admin Panel */}
+            <Route path="/admin" element={
+              <ProtectedRoute requiredRoles={['ADMIN', 'SCOUT', 'REGISTRAR']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<AdminDashboard />} />
+              <Route path="players" element={<AdminPlayers />} />
+              <Route path="verification" element={<AdminVerification />} />
+              <Route path="statistics" element={<AdminStatistics />} />
+              <Route path="clubs" element={<AdminClubs />} />
+              <Route path="scouts" element={<AdminScouts />} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="settings" element={<AdminSettings />} />
+              <Route path="tournament" element={<TournamentDashboard />} />
+              <Route path="tournament/schedule" element={<TournamentSchedule />} />
+              <Route path="tournament/bracket" element={<TournamentBracket />} />
+              <Route path="tournament/setup" element={<TournamentSetup />} />
+              <Route path="tournament/control" element={<CompetitionControl />} />
+              <Route path="tournament/age-fraud" element={<AgeFraudVerification />} />
+              <Route path="match-data" element={<AdminMatchData />} />
+              <Route path="match-data/approval" element={<MatchReportApproval />} />
+              <Route path="roles" element={<RoleManagement />} />
+              <Route path="analytics" element={<AnalyticsDashboard />} />
+            </Route>
 
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

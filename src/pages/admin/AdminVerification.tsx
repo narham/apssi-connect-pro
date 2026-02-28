@@ -12,9 +12,15 @@ interface DocumentFile {
 
 interface VerificationLog {
   timestamp: string;
-  action: "submitted" | "under_review" | "approved" | "rejected" | "reupload_requested";
+  action: "submitted" | "under_review" | "approved" | "rejected" | "reupload_requested" | "risk_score_changed" | "verification_attempt" | "log_viewed";
   adminName?: string;
   notes?: string;
+  details?: {
+    oldScore?: number;
+    newScore?: number;
+    attemptNumber?: number;
+    documentsUploaded?: string[];
+  };
 }
 
 interface VerificationRequest {
@@ -28,6 +34,9 @@ interface VerificationRequest {
   priority: "normal" | "high";
   submitted: string;
   age: number;
+  uploadTimestamp: string;
+  verificationAttempts: number;
+  currentRiskScore: number;
   documents: {
     nik: DocumentFile;
     kk: DocumentFile;
@@ -56,6 +65,9 @@ const initialVerificationRequests: VerificationRequest[] = [
     priority: "normal",
     submitted: "2026-02-28 09:15",
     age: 16,
+    uploadTimestamp: "2026-02-28 09:15",
+    verificationAttempts: 2,
+    currentRiskScore: 8,
     documents: {
       nik: { fileName: "nik_001.jpg", fileType: "jpg", uploadedAt: "2026-02-28 09:00", previewUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160'%3E%3Crect fill='%23334155' width='120' height='160'/%3E%3Ctext x='50%' y='50%' fill='%2394a3b8' font-size='12' text-anchor='middle' dy='.3em'%3EID Card%3C/text%3E%3C/svg%3E" },
       kk: { fileName: "kk_001.jpg", fileType: "jpg", uploadedAt: "2026-02-28 09:05", previewUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160'%3E%3Crect fill='%23475569' width='120' height='160'/%3E%3Ctext x='50%' y='50%' fill='%23cbd5e1' font-size='12' text-anchor='middle' dy='.3em'%3EBirth Cert%3C/text%3E%3C/svg%3E" },
@@ -71,6 +83,8 @@ const initialVerificationRequests: VerificationRequest[] = [
     adminNotes: "",
     verificationHistory: [
       { timestamp: "2026-02-28 09:15", action: "submitted" },
+      { timestamp: "2026-02-28 09:30", action: "verification_attempt", details: { attemptNumber: 1 } },
+      { timestamp: "2026-02-28 09:45", action: "risk_score_changed", details: { oldScore: 15, newScore: 8 } },
       { timestamp: "2026-02-28 10:00", action: "under_review" },
     ],
   },
@@ -85,6 +99,9 @@ const initialVerificationRequests: VerificationRequest[] = [
     priority: "normal",
     submitted: "2026-02-28 08:42",
     age: 17,
+    uploadTimestamp: "2026-02-28 08:42",
+    verificationAttempts: 1,
+    currentRiskScore: 22,
     documents: {
       nik: { fileName: "nik_002.jpg", fileType: "jpg", uploadedAt: "2026-02-28 08:30", previewUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160'%3E%3Crect fill='%23334155' width='120' height='160'/%3E%3Ctext x='50%' y='50%' fill='%23cbd5e1' font-size='12' text-anchor='middle' dy='.3em'%3EID Card%3C/text%3E%3C/svg%3E" },
       kk: { fileName: "kk_002.jpg", fileType: "jpg", uploadedAt: "2026-02-28 08:35", previewUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160'%3E%3Crect fill='%23475569' width='120' height='160'/%3E%3Ctext x='50%' y='50%' fill='%23cbd5e1' font-size='12' text-anchor='middle' dy='.3em'%3EPending%3C/text%3E%3C/svg%3E" },
@@ -111,6 +128,9 @@ const initialVerificationRequests: VerificationRequest[] = [
     priority: "high",
     submitted: "2026-02-27 14:20",
     age: 15,
+    uploadTimestamp: "2026-02-27 14:20",
+    verificationAttempts: 3,
+    currentRiskScore: 55,
     documents: {
       nik: { fileName: "nik_003.jpg", fileType: "jpg", uploadedAt: "2026-02-27 14:10", previewUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160'%3E%3Crect fill='%23334155' width='120' height='160'/%3E%3Ctext x='50%' y='50%' fill='%23fed7aa' font-size='12' text-anchor='middle' dy='.3em'%3EID Card%3C/text%3E%3C/svg%3E" },
       kk: { fileName: "kk_003.jpg", fileType: "jpg", uploadedAt: "2026-02-27 14:12", previewUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160'%3E%3Crect fill='%23714f3d' width='120' height='160'/%3E%3Ctext x='50%' y='50%' fill='%23fed7aa' font-size='12' text-anchor='middle' dy='.3em'%3EBirth Cert%3C/text%3E%3C/svg%3E" },
@@ -126,6 +146,8 @@ const initialVerificationRequests: VerificationRequest[] = [
     adminNotes: "",
     verificationHistory: [
       { timestamp: "2026-02-27 14:20", action: "submitted" },
+      { timestamp: "2026-02-27 14:30", action: "verification_attempt", details: { attemptNumber: 1 } },
+      { timestamp: "2026-02-27 14:45", action: "reupload_requested", notes: "Selfie blurry", adminName: "Admin John" },
       { timestamp: "2026-02-27 15:00", action: "under_review", adminName: "Admin John" },
     ],
   },
@@ -140,6 +162,9 @@ const initialVerificationRequests: VerificationRequest[] = [
     priority: "normal",
     submitted: "2026-02-27 11:05",
     age: 18,
+    uploadTimestamp: "2026-02-27 11:05",
+    verificationAttempts: 1,
+    currentRiskScore: 12,
     documents: {
       nik: { fileName: "nik_004.jpg", fileType: "jpg", uploadedAt: "2026-02-27 11:00", previewUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160'%3E%3Crect fill='%23334155' width='120' height='160'/%3E%3Ctext x='50%' y='50%' fill='%2386efac' font-size='12' text-anchor='middle' dy='.3em'%3EID Card%3C/text%3E%3C/svg%3E" },
       kk: { fileName: "kk_004.jpg", fileType: "jpg", uploadedAt: "2026-02-27 11:02", previewUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160'%3E%3Crect fill='%232d4a2b' width='120' height='160'/%3E%3Ctext x='50%' y='50%' fill='%2386efac' font-size='12' text-anchor='middle' dy='.3em'%3EBirth Cert%3C/text%3E%3C/svg%3E" },
@@ -368,27 +393,43 @@ const VerificationDetailModal = ({
           </div>
 
           {/* Verification Timeline */}
-          <div className="border-t border-border/30 pt-6 space-y-3">
-            <h3 className="text-sm font-oswald font-bold text-foreground uppercase tracking-wider">Verification Timeline</h3>
-            <div className="space-y-3">
+          <div className="border-t border-border/30 pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-oswald font-bold text-foreground uppercase tracking-wider">Verification Audit Trail</h3>
+              <div className="flex gap-4 text-[10px] font-montserrat text-muted-foreground uppercase tracking-tighter">
+                <span>Upload: {request.uploadTimestamp}</span>
+                <span>Attempts: {request.verificationAttempts}</span>
+                <span>Risk Index: {request.currentRiskScore}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {request.verificationHistory.map((log, idx) => (
-                <div key={idx} className="flex gap-3">
+                <div key={idx} className="flex gap-3 group">
                   <div className="flex flex-col items-center">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 ${
                         log.action === "approved"
-                          ? "bg-accent text-background"
+                          ? "bg-accent/10 border-accent text-accent"
                           : log.action === "rejected"
-                          ? "bg-destructive text-destructive-foreground"
+                          ? "bg-destructive/10 border-destructive text-destructive"
+                          : log.action === "risk_score_changed"
+                          ? "bg-blue-500/10 border-blue-500 text-blue-500"
+                          : log.action === "verification_attempt"
+                          ? "bg-purple-500/10 border-purple-500 text-purple-500"
                           : log.action === "submitted"
-                          ? "bg-muted text-foreground"
-                          : "bg-yellow-500 text-background"
+                          ? "bg-muted/10 border-muted text-foreground"
+                          : "bg-yellow-500/10 border-yellow-500 text-yellow-500"
                       }`}
                     >
                       {log.action === "approved" ? (
                         <Check className="w-4 h-4" />
                       ) : log.action === "rejected" ? (
                         <X className="w-4 h-4" />
+                      ) : log.action === "risk_score_changed" ? (
+                        <ShieldCheck className="w-4 h-4" />
+                      ) : log.action === "verification_attempt" ? (
+                        <Camera className="w-4 h-4" />
                       ) : log.action === "submitted" ? (
                         <Clock className="w-4 h-4" />
                       ) : (
@@ -396,23 +437,56 @@ const VerificationDetailModal = ({
                       )}
                     </div>
                     {idx < request.verificationHistory.length - 1 && (
-                      <div className="w-0.5 h-8 bg-border/30 my-1" />
+                      <div className="w-0.5 h-full bg-border/20 my-1" />
                     )}
                   </div>
-                  <div className="pt-1">
-                    <p className="text-xs font-montserrat font-semibold text-foreground capitalize">
-                      {log.action.replace(/_/g, " ")}
-                    </p>
-                    <p className="text-[10px] font-montserrat text-muted-foreground">{formatTime(log.timestamp)}</p>
+                  <div className="pt-1 pb-2 flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-montserrat font-bold text-foreground uppercase tracking-tight">
+                        {log.action.replace(/_/g, " ")}
+                      </p>
+                      <span className="text-[9px] font-mono text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                        {log.timestamp}
+                      </span>
+                    </div>
+                    
                     {log.adminName && (
-                      <p className="text-[10px] font-montserrat text-muted-foreground">by {log.adminName}</p>
+                      <p className="text-[9px] font-montserrat font-medium text-accent/70 mt-0.5">Executor: {log.adminName}</p>
                     )}
+
+                    {log.details && (
+                      <div className="mt-2 p-2 rounded bg-muted/30 border border-border/20 text-[10px] font-montserrat space-y-1">
+                        {log.details.oldScore !== undefined && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Risk Transition:</span>
+                            <span className="font-bold">{log.details.oldScore} → {log.details.newScore}</span>
+                          </div>
+                        )}
+                        {log.details.attemptNumber && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Scan Sequence:</span>
+                            <span className="font-bold">#{log.details.attemptNumber}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {log.notes && (
-                      <p className="text-[10px] font-montserrat text-muted-foreground italic mt-1">{log.notes}</p>
+                      <div className="mt-2 relative">
+                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-accent/30 rounded-full" />
+                        <p className="text-[10px] font-montserrat text-muted-foreground italic pl-3 leading-relaxed">
+                          "{log.notes}"
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
               ))}
+            </div>
+            <div className="p-3 bg-muted/10 border border-dashed border-border/50 rounded-lg">
+              <p className="text-[9px] font-montserrat text-center text-muted-foreground/60 uppercase tracking-widest flex items-center justify-center gap-2">
+                <Lock className="w-3 h-3" /> System Sealed Log • Non-Editable Audit Trail
+              </p>
             </div>
           </div>
         </div>
@@ -545,6 +619,26 @@ const AdminVerification = () => {
     setAdminNotes({ ...adminNotes, [id]: notes });
   };
 
+  const handleOpenDetails = (id: string) => {
+    setSelectedVerificationId(id);
+    
+    // Log Access Monitoring: Track whenever a sensitive record is opened
+    setRequests(prev => prev.map(r => 
+      r.id === id ? {
+        ...r,
+        verificationHistory: [
+          ...r.verificationHistory,
+          {
+            timestamp: new Date().toISOString().replace("T", " ").split(".")[0],
+            action: "log_viewed",
+            adminName: "Admin Jane",
+            notes: "Admin opened full verification report"
+          }
+        ]
+      } : r
+    ));
+  };
+
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto">
       <div>
@@ -572,7 +666,7 @@ const AdminVerification = () => {
         {requests.map((req) => (
           <div
             key={req.id}
-            onClick={() => setSelectedVerificationId(req.id)}
+            onClick={() => handleOpenDetails(req.id)}
             className="glass-card rounded-lg p-5 micro-hover relative z-0 cursor-pointer hover:border-accent/30 transition-all"
           >
             <div className="relative z-10">
@@ -620,7 +714,7 @@ const AdminVerification = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedVerificationId(req.id);
+                      handleOpenDetails(req.id);
                     }}
                     className="flex items-center gap-1.5 bg-muted/30 hover:bg-muted/50 text-foreground px-3 py-1.5 rounded-lg text-[10px] font-montserrat font-bold uppercase tracking-wider micro-hover transition-colors"
                   >
