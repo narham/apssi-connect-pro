@@ -8,6 +8,15 @@ import ECardDashboard from "./pages/ECardDashboard";
 import IdentityVerification from "./pages/IdentityVerification";
 import MatchStatistics from "./pages/MatchStatistics";
 import NotFound from "./pages/NotFound";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminPlayers from "./pages/admin/AdminPlayers";
+import AdminVerification from "./pages/admin/AdminVerification";
+import AdminStatistics from "./pages/admin/AdminStatistics";
+import AdminClubs from "./pages/admin/AdminClubs";
+import AdminScouts from "./pages/admin/AdminScouts";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +31,19 @@ const App = () => (
           <Route path="/e-card" element={<ECardDashboard />} />
           <Route path="/register" element={<IdentityVerification />} />
           <Route path="/stats" element={<MatchStatistics />} />
+
+          {/* Admin Panel */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="players" element={<AdminPlayers />} />
+            <Route path="verification" element={<AdminVerification />} />
+            <Route path="statistics" element={<AdminStatistics />} />
+            <Route path="clubs" element={<AdminClubs />} />
+            <Route path="scouts" element={<AdminScouts />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
