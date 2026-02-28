@@ -211,6 +211,73 @@
   .micro-tap {
     @apply transition-transform duration-150 ease-out active:scale-95;
   }
+
+  /* ── Tap Glow Effect ── */
+  .tap-glow-container {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tap-glow-container::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: radial-gradient(circle, hsla(var(--neon-red) / 0.6) 0%, transparent 70%);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    transition: none;
+  }
+
+  .tap-glow-container:active::after {
+    animation: tap-glow 0.5s ease-out forwards;
+  }
+
+  /* ── QR Scan Pulse ── */
+  .qr-scan-pulse {
+    animation: qr-pulse 2s ease-in-out infinite;
+    border-radius: var(--radius);
+  }
+
+  /* ── Scan Sweep Overlay ── */
+  .scan-sweep-overlay {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scan-sweep-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      hsla(var(--neon-green) / 0.12) 45%,
+      hsla(var(--neon-green) / 0.25) 50%,
+      hsla(var(--neon-green) / 0.12) 55%,
+      transparent 100%
+    );
+    height: 200%;
+    animation: scan-sweep 1.8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* ── Stat Count-Up Bounce ── */
+  .stat-count-up {
+    display: inline-block;
+    animation: count-up-bounce 0.3s ease-out;
+  }
+
+  /* ── Swipe Card Transition ── */
+  .swipe-card {
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+    will-change: transform, opacity;
+  }
 }
 
 @layer utilities {

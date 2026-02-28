@@ -45,7 +45,7 @@ const EPlayerCardItem = ({ player, isActive }: { player: PlayerData; isActive: b
   return (
     <div
       className={cn(
-        "w-[300px] flex-shrink-0 transition-all duration-500 ease-out snap-center",
+        "w-[300px] flex-shrink-0 snap-center swipe-card",
         isActive ? "scale-100 opacity-100" : "scale-90 opacity-40"
       )}
     >
@@ -109,7 +109,7 @@ const EPlayerCardItem = ({ player, isActive }: { player: PlayerData; isActive: b
 
         {/* ── BOTTOM: QR + Player ID ── */}
         <div className="relative z-10 px-5 py-4 flex items-center gap-4">
-          <div className="w-16 h-16 rounded-sm bg-foreground p-1.5 flex-shrink-0">
+          <div className="w-16 h-16 rounded-sm bg-foreground p-1.5 flex-shrink-0 qr-scan-pulse">
             <QRCodeSVG
               value={`https://apssi-connect.id/player/${player.id}`}
               size={52}
@@ -189,14 +189,14 @@ const ECardDashboard = () => {
             <button
               onClick={() => handleSwipe("right")}
               disabled={currentIndex === 0}
-              className={cn("w-8 h-8 rounded-sm glass-card flex items-center justify-center micro-tap relative z-0", currentIndex === 0 && "opacity-30")}
+              className={cn("w-8 h-8 rounded-sm glass-card flex items-center justify-center micro-tap tap-glow-container relative z-0", currentIndex === 0 && "opacity-30")}
             >
               <ChevronLeft className="w-4 h-4 text-foreground relative z-10" />
             </button>
             <button
               onClick={() => handleSwipe("left")}
               disabled={currentIndex === players.length - 1}
-              className={cn("w-8 h-8 rounded-sm glass-card flex items-center justify-center micro-tap relative z-0", currentIndex === players.length - 1 && "opacity-30")}
+              className={cn("w-8 h-8 rounded-sm glass-card flex items-center justify-center micro-tap tap-glow-container relative z-0", currentIndex === players.length - 1 && "opacity-30")}
             >
               <ChevronRight className="w-4 h-4 text-foreground relative z-10" />
             </button>

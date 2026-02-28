@@ -127,6 +127,46 @@ export default {
           "90%": { opacity: "1" },
           "100%": { top: "90%", opacity: "0" },
         },
+        "tap-glow": {
+          "0%": { transform: "scale(0)", opacity: "0.6" },
+          "50%": { transform: "scale(1.5)", opacity: "0.3" },
+          "100%": { transform: "scale(2.5)", opacity: "0" },
+        },
+        "swipe-left": {
+          "0%": { transform: "translateX(0)", opacity: "1" },
+          "100%": { transform: "translateX(-100%)", opacity: "0" },
+        },
+        "swipe-right": {
+          "0%": { transform: "translateX(0)", opacity: "1" },
+          "100%": { transform: "translateX(100%)", opacity: "0" },
+        },
+        "swipe-in-left": {
+          "0%": { transform: "translateX(100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        "swipe-in-right": {
+          "0%": { transform: "translateX(-100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        "qr-pulse": {
+          "0%, 100%": {
+            boxShadow: "0 0 0 0 hsla(var(--neon-green) / 0.5), 0 0 12px hsla(var(--neon-green) / 0.2)",
+          },
+          "50%": {
+            boxShadow: "0 0 0 8px hsla(var(--neon-green) / 0), 0 0 24px hsla(var(--neon-green) / 0.4)",
+          },
+        },
+        "count-up-bounce": {
+          "0%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.2)" },
+          "100%": { transform: "scale(1)" },
+        },
+        "scan-sweep": {
+          "0%": { transform: "translateY(-100%)", opacity: "0" },
+          "20%": { opacity: "0.8" },
+          "80%": { opacity: "0.8" },
+          "100%": { transform: "translateY(100%)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -143,6 +183,14 @@ export default {
         "slide-up": "slide-up 0.5s ease-out forwards",
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
         "scan-line": "scan-line 2s ease-in-out infinite",
+        "tap-glow": "tap-glow 0.5s ease-out forwards",
+        "swipe-left": "swipe-left 0.3s ease-out forwards",
+        "swipe-right": "swipe-right 0.3s ease-out forwards",
+        "swipe-in-left": "swipe-in-left 0.3s ease-out forwards",
+        "swipe-in-right": "swipe-in-right 0.3s ease-out forwards",
+        "qr-pulse": "qr-pulse 2s ease-in-out infinite",
+        "count-up-bounce": "count-up-bounce 0.3s ease-out",
+        "scan-sweep": "scan-sweep 1.8s ease-in-out infinite",
       },
     },
   },

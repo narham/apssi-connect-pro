@@ -27,7 +27,7 @@ const AnimatedCounter = ({ target, duration = 1200 }: { target: number; duration
     requestAnimationFrame(animate);
   }, [target, duration]);
 
-  return <span ref={ref}>{count}</span>;
+  return <span ref={ref} className="stat-count-up">{count}</span>;
 };
 
 /* ─── Radial Progress ─── */
@@ -160,7 +160,7 @@ const MatchRatingCard = ({ match, rating, result, delay }: { match: string; rati
   const resultColor = result === "W" ? "bg-neon-green/15 text-neon-green" : result === "D" ? "bg-yellow-500/10 text-yellow-400" : "bg-neon-red/15 text-neon-red";
 
   return (
-    <div className="glass-card rounded-lg p-3 flex items-center gap-3 micro-hover animate-slide-up relative z-0" style={{ animationDelay: `${delay}ms` }}>
+    <div className="glass-card rounded-lg p-3 flex items-center gap-3 micro-hover tap-glow-container animate-slide-up relative z-0" style={{ animationDelay: `${delay}ms` }}>
       <span className={cn("w-7 h-7 rounded-sm flex items-center justify-center text-[10px] font-oswald font-bold", resultColor)}>{result}</span>
       <div className="flex-1 relative z-10">
         <p className="text-[11px] font-montserrat font-semibold text-foreground">{match}</p>
