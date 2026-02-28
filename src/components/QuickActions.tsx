@@ -1,19 +1,23 @@
 import { UserPlus, ScanLine, ClipboardList, Radar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const actions = [
-  { icon: UserPlus, label: "Register Player", desc: "KU-12 Registration", variant: "red" as const },
-  { icon: ScanLine, label: "Verify ID", desc: "QR Scan & Verify", variant: "green" as const },
-  { icon: ClipboardList, label: "Match Report", desc: "Submit Stats", variant: "red" as const },
-  { icon: Radar, label: "Scout Mode", desc: "Talent Discovery", variant: "green" as const },
+  { icon: UserPlus, label: "Register Player", desc: "KU-12 Registration", variant: "red" as const, path: "/register" },
+  { icon: ScanLine, label: "Verify ID", desc: "QR Scan & Verify", variant: "green" as const, path: "/register" },
+  { icon: ClipboardList, label: "Match Report", desc: "Submit Stats", variant: "red" as const, path: "/stats" },
+  { icon: Radar, label: "Scout Mode", desc: "Talent Discovery", variant: "green" as const, path: "/stats" },
 ];
 
 const QuickActions = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="grid grid-cols-2 gap-3">
       {actions.map((action, i) => (
         <button
           key={action.label}
+          onClick={() => navigate(action.path)}
           className={cn(
             "glass-card-gradient rounded-lg p-4 text-left micro-hover animate-slide-up relative z-0"
           )}
