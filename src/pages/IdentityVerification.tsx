@@ -19,7 +19,7 @@ interface DocUpload {
 /* ─── Scan Frame Animation ─── */
 const ScanFrame = ({ active }: { active: boolean }) => {
   return (
-    <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden inner-shadow bg-navy-deep/50">
+    <div className={cn("relative w-full aspect-[4/3] rounded-lg overflow-hidden inner-shadow bg-navy-deep/50", active && "scan-sweep-overlay")}>
       {/* Corner brackets */}
       <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-neon-green/70 rounded-tl" />
       <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-neon-green/70 rounded-tr" />
@@ -83,7 +83,7 @@ const DocUploadCard = ({
         {doc.state === "idle" && (
           <button
             onClick={onUpload}
-            className="w-full py-3 rounded-sm glass-card border border-dashed border-muted-foreground/30 flex flex-col items-center gap-1.5 micro-hover relative z-0 group"
+            className="w-full py-3 rounded-sm glass-card border border-dashed border-muted-foreground/30 flex flex-col items-center gap-1.5 micro-hover tap-glow-container relative z-0 group"
           >
             <Upload className="w-5 h-5 text-muted-foreground group-hover:text-neon-green transition-colors relative z-10" />
             <span className="text-[10px] font-montserrat font-semibold text-muted-foreground group-hover:text-foreground transition-colors relative z-10">

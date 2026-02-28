@@ -38,7 +38,7 @@ const BottomNav = () => {
                 key={item.label}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 px-3 py-2 rounded-sm micro-tap",
+                  "relative flex flex-col items-center gap-0.5 px-3 py-2 rounded-sm micro-tap tap-glow-container",
                   "transition-colors duration-200",
                   isActive ? "text-neon-red" : "text-muted-foreground"
                 )}
