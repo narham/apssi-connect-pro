@@ -9,6 +9,9 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
+  Signal,
+  Calendar,
+  Trophy,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -34,6 +37,12 @@ const mainNav = [
   { title: "Clubs", url: "/admin/clubs", icon: Building2 },
   { title: "Scouts", url: "/admin/scouts", icon: Eye },
   { title: "Reports", url: "/admin/reports", icon: FileText },
+];
+
+const tournamentNav = [
+  { title: "Control Center", url: "/admin/tournament", icon: Signal },
+  { title: "Schedule", url: "/admin/tournament/schedule", icon: Calendar },
+  { title: "Bracket & Awards", url: "/admin/tournament/bracket", icon: Trophy },
 ];
 
 const systemNav = [
@@ -86,6 +95,35 @@ export function AdminSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === "/admin"}
+                      className="hover:bg-muted/50"
+                      activeClassName="bg-destructive/10 text-destructive font-medium"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span className="font-montserrat text-sm">{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[10px] font-montserrat font-bold text-muted-foreground uppercase tracking-widest">
+            Tournament Ops
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {tournamentNav.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                  >
+                    <NavLink
+                      to={item.url}
+                      end={item.url === "/admin/tournament"}
                       className="hover:bg-muted/50"
                       activeClassName="bg-destructive/10 text-destructive font-medium"
                     >
