@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+import { LogIn } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
 import StatsPanel from "@/components/StatsPanel";
 import QuickActions from "@/components/QuickActions";
@@ -26,7 +28,7 @@ const samplePlayer = {
 const recentMatches = [
   { home: "Garuda Muda FC", away: "Elang Jaya", score: "3 - 1", status: "completed" as const },
   { home: "Rajawali United", away: "Banteng FC", score: "2 - 2", status: "completed" as const },
-  { home: "Singa Putih", away: "Harimau FC", score: "0 - 1", status: "live" as const },
+  { home: "Singa Putih", away: "Harimau FC", score: "— - —", status: "upcoming" as const },
 ];
 
 const topPlayers = [
@@ -36,10 +38,12 @@ const topPlayers = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen pb-20">
       {/* Top Bar */}
-      <header className="glass-panel sticky top-0 z-40 px-4 py-3 flex items-center justify-between">
+      <header className="glass-panel sticky top-0 z-40 px-4 py-3 flex items-center justify-between max-w-4xl mx-auto">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-sm bg-neon-red/20 neon-border-red flex items-center justify-center border">
             <span className="text-[10px] font-oswald font-black text-neon-red">AC</span>
@@ -49,11 +53,20 @@ const Index = () => {
             <span className="text-[8px] font-montserrat font-medium text-muted-foreground uppercase tracking-wider">Tournament HQ</span>
           </div>
         </div>
-        <StatusBadge status="live" />
+        <div className="flex items-center gap-3">
+          <StatusBadge status="live" />
+          <button
+            onClick={() => navigate("/login")}
+            className="flex items-center gap-1.5 glass-card rounded-sm px-2.5 py-1.5 text-[9px] font-montserrat font-bold text-muted-foreground hover:text-foreground uppercase tracking-wider transition-colors micro-tap relative z-0"
+          >
+            <LogIn className="w-3.5 h-3.5 relative z-10" />
+            <span className="relative z-10 hidden sm:inline">Admin</span>
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-lg mx-auto space-y-6 px-4 pt-4">
+      <main className="max-w-4xl mx-auto space-y-6 px-4 pt-4">
         <HeroSection />
 
         <DashboardPanel title="Tournament Overview">

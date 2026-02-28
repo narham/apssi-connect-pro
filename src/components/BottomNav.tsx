@@ -1,4 +1,4 @@
-import { Home, CreditCard, ShieldCheck, BarChart3, Search, UserPlus } from "lucide-react";
+import { Home, CreditCard, ShieldCheck, BarChart3, LogIn } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -7,7 +7,7 @@ const navItems = [
   { icon: CreditCard, label: "Player Card", path: "/e-card" },
   { icon: ShieldCheck, label: "Verify", path: "/register" },
   { icon: BarChart3, label: "Statistics", path: "/stats" },
-  { icon: Search, label: "Scout", path: "/scout" },
+  { icon: LogIn, label: "Admin", path: "/login" },
 ];
 
 const BottomNav = () => {
@@ -16,21 +16,9 @@ const BottomNav = () => {
 
   return (
     <>
-      {/* Floating Action Button */}
-      <button
-        onClick={() => navigate("/register")}
-        className={cn(
-          "fixed bottom-20 right-4 z-[60] w-14 h-14 rounded-full flex items-center justify-center",
-          "bg-neon-red shadow-[0_0_20px_hsla(349,100%,55%,0.4)] micro-tap",
-          "transition-transform duration-200 hover:scale-110 active:scale-95"
-        )}
-      >
-        <UserPlus className="w-6 h-6 text-white" />
-      </button>
-
       <nav className="fixed bottom-0 left-0 right-0 z-50 glass-panel border-t-0">
         <div className="h-[1px] gradient-line opacity-40" />
-        <div className="flex items-center justify-around py-2 px-1 max-w-lg mx-auto">
+        <div className="flex items-center justify-around py-2 px-1 max-w-2xl mx-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
