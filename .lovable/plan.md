@@ -1,95 +1,91 @@
 
 
-# Database Schema Setup for APSSI CONNECT Admin Panel
+# Auth Module Fixes
 
 ## Overview
-Create the complete database schema with tables for provinces, clubs, teams, players, tournaments, matches, match results, and verification logs. All tables will have Row-Level Security (RLS) enabled with role-based access control using a `user_roles` table and a `has_role` security definer function.
+Fix 9 identified issues in the authentication module covering security, correctness, and UX gaps.
 
-## Database Architecture
+## Changes
 
-```text
-+----------------+     +------------+     +----------+
-|  user_roles    |     |  provinces  |---->|  clubs   |
-+----------------+     +------------+     +----------+
-| user_id (FK)   |                            |
-| role (enum)    |                            v
-+----------------+                        +----------+
-                                          |  teams   |
-                                          +----------+
-                                              |
-                                              v
-+------------------+     +-----------+    +----------+
-| verification_logs|<----|  players  |--->|  clubs   |
-+------------------+     +-----------+    +----------+
-                              |
-              +---------------+---------------+
-              v                               v
-      +----------------+            +------------------+
-      | match_players  |            | tournaments      |
-      +----------------+            +------------------+
-              ^                            |
-              |                            v
-      +----------------+            +------------------+
-      |   matches      |----------->| tournament       |
-      +----------------+            |   (FK)           |
-                                    +------------------+
-```
+### 1. Delete `src/lib/supabase.ts`
+Remove the legacy client file that uses wrong env var names and hardcoded fallback credentials. Update any remaining imports to use `@/integrations/supabase/client`.
 
-## Migration Steps (Single Migration)
+### 2. Fix auth listener ordering in `useAuth.tsx`
+Register `onAuthStateChange` BEFORE calling `getSession()` to prevent missed auth events during initialization.
 
-### 1. Role System
-- Create `app_role` enum: `super_admin`, `provincial_admin`, `match_commissioner`, `data_operator`, `scout`
-- Create `user_roles` table with `user_id` (references `auth.users`) and `role`
-- Create `has_role()` security definer function to avoid RLS recursion
+### 3. Extract shared role map
+Create a `src/constants/roles.ts` file with the role mapping constant, and import it in `useAuth.tsx` and `Login.tsx` to eliminate duplication.
 
-### 2. Core Tables
-- **provinces** -- id, name, timestamps
-- **clubs** -- id, name, province_id (FK), logo_url, timestamps
-- **teams** -- id, club_id (FK), age_category, name, timestamps
-- **players** -- id, full_name, nik, kk_number, birth_date, birth_place, parent_name, club_id (FK), team_id (FK), photo_url, dukcapil_status, dukcapil_match_score, consistency_score, face_match_confidence, verification_status, is_over_age, admin_override, override_reason, timestamps
-- **tournaments** -- id, name, season, province_id (FK), status, start_date, end_date, timestamps
-- **matches** -- id, tournament_id (FK), home_team_id (FK), away_team_id (FK), match_date, venue, status, home_score, away_score, commissioner_id, timestamps
-- **match_events** -- id, match_id (FK), player_id (FK), event_type (goal/card/sub), minute, details, timestamps
-- **verification_logs** -- id, player_id (FK), admin_id, action_type, old_status, new_status, risk_score, reason, payload, timestamp
+### 4. Fix RLS policy types (database migration)
+Change all the "Authenticated users can read..." SELECT policies from RESTRICTIVE to PERMISSIVE on tables: `clubs`, `match_events`, `matches`, `players`, `provinces`, `teams`, `tournaments`, `verification_logs`, and `user_roles` (own-row read).
 
-### 3. RLS Policies
-All tables will have RLS enabled. Access rules:
-- **Authenticated users**: Can SELECT most tables (read access for the app)
-- **super_admin / provincial_admin**: Full CRUD on all operational tables
-- **match_commissioner**: INSERT/UPDATE on matches, match_events
-- **data_operator**: INSERT/UPDATE on players, matches
-- **scout**: SELECT only on players, matches, match_events
-- **user_roles**: Only super_admin can manage; users can read their own role
+### 5. Add password reset flow
+- Add a "Forgot Password" link on the Login page that triggers `resetPasswordForEmail`
+- Create a `/reset-password` page that reads the recovery token and lets users set a new password
 
-### 4. Code Updates
-- Remove the manual `src/lib/supabase.ts` client (use `@/integrations/supabase/client` everywhere)
-- Update `src/services/playerService.ts` and `src/services/authService.ts` to import from `@/integrations/supabase/client`
-- The `src/integrations/supabase/types.ts` will auto-regenerate after migration
+### 6. Fix ProtectedRoute toast spam
+Move the unauthorized toast into a `useEffect` so it only fires once, not on every re-render.
+
+### 7. Redirect back after login
+Read `location.state.from` in `Login.tsx` and navigate there after successful authentication instead of always going to `/admin` or `/`.
+
+### 8. Fix role fallback inconsistency
+Standardize error handling: if role fetch fails, default to `null` in both code paths (init and listener) so the user is treated as unauthenticated-without-role consistently. Let `ProtectedRoute` handle the redirect.
+
+## Files to modify
+- **Delete**: `src/lib/supabase.ts`
+- **Create**: `src/constants/roles.ts`
+- **Create**: `src/pages/ResetPassword.tsx`
+- **Edit**: `src/hooks/useAuth.tsx` (listener order, shared role map, consistent fallback)
+- **Edit**: `src/pages/Login.tsx` (redirect-back, forgot password link, shared role map)
+- **Edit**: `src/components/ProtectedRoute.tsx` (toast in useEffect)
+- **Edit**: `src/App.tsx` (add `/reset-password` route)
+- **Edit**: `src/services/playerService.ts` (if it imports from `lib/supabase`)
+- **Migration**: Fix restrictive SELECT policies to permissive
 
 ## Technical Details
 
-### Role Enum Values
-```sql
-create type public.app_role as enum (
-  'super_admin', 'provincial_admin', 
-  'match_commissioner', 'data_operator', 'scout'
-);
+### Role constants file
+```typescript
+export const DB_TO_UI_ROLE_MAP: Record<string, 'ADMIN' | 'SCOUT' | 'REGISTRAR' | 'VIEWER'> = {
+  super_admin: 'ADMIN',
+  provincial_admin: 'ADMIN',
+  match_commissioner: 'REGISTRAR',
+  data_operator: 'REGISTRAR',
+  scout: 'SCOUT',
+};
+
+export const ADMIN_DB_ROLES = ['super_admin', 'provincial_admin', 'match_commissioner', 'data_operator', 'scout'];
 ```
 
-### Security Definer Function
-```sql
-create or replace function public.has_role(_user_id uuid, _role app_role)
-returns boolean language sql stable security definer
-set search_path = public
-as $$ select exists (
-  select 1 from public.user_roles 
-  where user_id = _user_id and role = _role
-) $$;
+### Auth listener fix (useAuth.tsx)
+```typescript
+useEffect(() => {
+  // 1. Set up listener FIRST
+  const { data: { subscription } } = authService.onAuthStateChange(async (event, currentSession) => {
+    setSession(currentSession);
+    setUser(currentSession?.user ?? null);
+    if (currentSession?.user) {
+      // fetch role...
+    } else {
+      setRole(null);
+    }
+    setLoading(false);
+  });
+
+  // 2. THEN check initial session
+  authService.getSession().then(/* ... */);
+
+  return () => subscription.unsubscribe();
+}, []);
 ```
 
-### Files to Modify
-1. **New migration** -- Single SQL migration with all tables, RLS, and functions
-2. **src/services/playerService.ts** -- Switch import to `@/integrations/supabase/client`
-3. **src/services/authService.ts** -- Switch import to `@/integrations/supabase/client`
-4. **src/lib/supabase.ts** -- Remove or keep as legacy; update references
-
+### RLS migration SQL
+```sql
+-- Drop restrictive SELECT policies and recreate as permissive
+-- Example for each table:
+DROP POLICY IF EXISTS "Authenticated users can read clubs" ON public.clubs;
+CREATE POLICY "Authenticated users can read clubs"
+  ON public.clubs FOR SELECT TO authenticated USING (true);
+-- Repeat for all 8 tables...
+```
