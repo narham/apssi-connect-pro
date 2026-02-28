@@ -1,13 +1,16 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { authService } from '../services/authService';
+import { DB_TO_UI_ROLE_MAP } from '../constants/roles';
+
+type UIRole = 'ADMIN' | 'SCOUT' | 'REGISTRAR' | 'VIEWER';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  role: 'ADMIN' | 'SCOUT' | 'REGISTRAR' | 'VIEWER' | null;
+  role: UIRole | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,56 +19,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState<'ADMIN' | 'SCOUT' | 'REGISTRAR' | 'VIEWER' | null>(null);
+  const [role, setRole] = useState<UIRole | null>(null);
+
+  const fetchRole = async (userId: string): Promise<UIRole | null> => {
+    try {
+      const profile = await authService.getUserProfile(userId);
+      return DB_TO_UI_ROLE_MAP[profile.role] || null;
+    } catch (err) {
+      console.error("Failed to load user role:", err);
+      return null;
+    }
+  };
 
   useEffect(() => {
-    // 1. Initial Session Check
-    const initAuth = async () => {
-      const { data: { session: initialSession } } = await authService.getSession();
-      setSession(initialSession);
-      setUser(initialSession?.user ?? null);
-      
-      if (initialSession?.user) {
-        try {
-          const profile = await authService.getUserProfile(initialSession.user.id);
-          const roleMap: Record<string, 'ADMIN' | 'SCOUT' | 'REGISTRAR' | 'VIEWER'> = {
-            'super_admin': 'ADMIN',
-            'provincial_admin': 'ADMIN',
-            'match_commissioner': 'REGISTRAR',
-            'data_operator': 'REGISTRAR',
-            'scout': 'SCOUT',
-          };
-          setRole(roleMap[profile.role] || 'VIEWER');
-        } catch (err) {
-          console.error("Failed to load user role:", err);
-        }
-      }
-      setLoading(false);
-    };
-
-    initAuth();
-
-    // 2. Subscribe to Auth Changes
-    const { data: { subscription } } = authService.onAuthStateChange(async (event, currentSession) => {
+    // 1. Register listener FIRST to avoid missing events
+    const { data: { subscription } } = authService.onAuthStateChange(async (_event, currentSession) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
-      
+
       if (currentSession?.user) {
-        try {
-          const profile = await authService.getUserProfile(currentSession.user.id);
-          const roleMap: Record<string, 'ADMIN' | 'SCOUT' | 'REGISTRAR' | 'VIEWER'> = {
-            'super_admin': 'ADMIN',
-            'provincial_admin': 'ADMIN',
-            'match_commissioner': 'REGISTRAR',
-            'data_operator': 'REGISTRAR',
-            'scout': 'SCOUT',
-          };
-          setRole(roleMap[profile.role] || 'VIEWER');
-        } catch {
-          setRole('VIEWER');
-        }
+        const uiRole = await fetchRole(currentSession.user.id);
+        setRole(uiRole);
       } else {
         setRole(null);
+      }
+      setLoading(false);
+    });
+
+    // 2. THEN fetch initial session
+    authService.getSession().then(async ({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
+
+      if (initialSession?.user) {
+        const uiRole = await fetchRole(initialSession.user.id);
+        setRole(uiRole);
       }
       setLoading(false);
     });
