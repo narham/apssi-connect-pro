@@ -38,6 +38,7 @@ const mainNav = [
   { title: "Scouts", url: "/admin/scouts", icon: Eye },
   { title: "Reports", url: "/admin/reports", icon: FileText },
   { title: "Match Data", url: "/admin/match-data", icon: BarChart3 },
+  { title: "Analytics", url: "/admin/analytics", icon: Signal },
 ];
 
 const tournamentNav = [
@@ -61,10 +62,10 @@ export function AdminSidebar() {
       : location.pathname.startsWith(path);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border">
-      <SidebarHeader className="p-4">
+    <Sidebar collapsible="icon" className="border-r border-border bg-sidebar-background/80 backdrop-blur-xl">
+      <SidebarHeader className="p-4 border-b border-white/5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 shrink-0 rounded-sm bg-destructive/20 neon-border-red flex items-center justify-center border">
+          <div className="w-8 h-8 shrink-0 rounded-sm bg-destructive/20 neon-border-red flex items-center justify-center border group-hover:neon-border-red transition-all duration-500">
             <span className="text-[10px] font-oswald font-black text-destructive">AC</span>
           </div>
           {!collapsed && (
@@ -72,8 +73,8 @@ export function AdminSidebar() {
               <span className="text-xs font-oswald font-bold text-foreground uppercase tracking-[0.12em] block leading-none">
                 APSSI Connect
               </span>
-              <span className="text-[8px] font-montserrat font-medium text-muted-foreground uppercase tracking-wider">
-                Admin Panel
+              <span className="text-[8px] font-montserrat font-bold text-accent uppercase tracking-widest mt-1 block">
+                Command Center
               </span>
             </div>
           )}

@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Users,
   ShieldCheck,
@@ -59,6 +60,36 @@ const provinceData = [
 ];
 
 const AdminDashboard = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 max-w-[1400px] mx-auto animate-pulse p-6">
+        <div className="flex justify-between items-center mb-8">
+          <div className="space-y-2">
+            <div className="h-8 w-48 skeleton" />
+            <div className="h-4 w-64 skeleton" />
+          </div>
+          <div className="h-10 w-32 skeleton rounded-full" />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-32 skeleton rounded-lg" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 h-[300px] skeleton rounded-lg" />
+          <div className="h-[300px] skeleton rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto">
       {/* Page Header */}
@@ -86,7 +117,9 @@ const AdminDashboard = () => {
         {overviewStats.map((stat, i) => (
           <div
             key={stat.label}
-            className="glass-card-gradient rounded-lg p-4 micro-hover animate-slide-up relative z-0"
+            className={`glass-card-gradient rounded-lg p-4 micro-hover animate-slide-up relative z-0 ${
+              stat.variant === "red" ? "glow-hover" : "glow-hover-green"
+            }`}
             style={{ animationDelay: `${i * 60}ms` }}
           >
             <div className="relative z-10">

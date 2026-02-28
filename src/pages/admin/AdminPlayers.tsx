@@ -32,9 +32,9 @@ const initialPlayers: Player[] = [
 ];
 
 const statusConfig = {
-  verified: { icon: CheckCircle2, label: "Verified", className: "text-accent bg-accent/10" },
-  pending: { icon: Clock, label: "Pending", className: "text-muted-foreground bg-muted/50" },
-  rejected: { icon: XCircle, label: "Rejected", className: "text-destructive bg-destructive/10" },
+  verified: { icon: CheckCircle2, label: "Verified", className: "status-approved" },
+  pending: { icon: Clock, label: "Pending", className: "status-pending" },
+  rejected: { icon: XCircle, label: "Rejected", className: "status-rejected" },
 };
 
 const positions = ["AMF", "ST", "CB", "GK", "LW", "CM", "RB", "LB", "DMF", "RW"];

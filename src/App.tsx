@@ -23,6 +23,7 @@ import TournamentBracket from "./pages/admin/TournamentBracket";
 import TournamentSetup from "./pages/admin/TournamentSetup";
 import AdminMatchData from "./pages/admin/AdminMatchData";
 import RoleManagement from "./pages/admin/RoleManagement";
+import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="tournament/setup" element={<TournamentSetup />} />
             <Route path="match-data" element={<AdminMatchData />} />
             <Route path="roles" element={<RoleManagement />} />
+            <Route path="analytics" element={<AnalyticsDashboard />} />
           </Route>
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

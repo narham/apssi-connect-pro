@@ -26,25 +26,31 @@ const AdminScouts = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {scouts.map((scout) => (
-          <div key={scout.name} className="glass-card-gradient rounded-lg p-5 micro-hover relative z-0">
+          <div key={scout.name} className={`glass-card-gradient rounded-lg p-5 micro-hover relative z-0 ${
+            scout.status === "active" ? "glow-hover-green" :
+            scout.status === "pending" ? "glow-hover" : "glow-hover"
+          }`}>
             <div className="relative z-10">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center border border-white/5">
                     <Eye className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-oswald font-bold text-foreground uppercase">{scout.name}</h3>
+                    <h3 className="text-sm font-oswald font-bold text-foreground uppercase tracking-wide">{scout.name}</h3>
                     <p className="text-[10px] font-montserrat text-muted-foreground flex items-center gap-1">
                       <MapPin className="w-3 h-3" /> {scout.province}
                     </p>
                   </div>
                 </div>
-                <span className={`text-[9px] font-montserrat font-bold px-2 py-0.5 rounded-full ${
-                  scout.status === "active" ? "text-accent bg-accent/10" :
-                  scout.status === "pending" ? "text-muted-foreground bg-muted/50" :
-                  "text-destructive bg-destructive/10"
+                <span className={`${
+                  scout.status === "active" ? "status-approved" :
+                  scout.status === "pending" ? "status-pending" :
+                  "status-rejected"
                 }`}>
+                  {scout.status === "active" && <CheckCircle2 className="w-3 h-3" />}
+                  {scout.status === "pending" && <Clock className="w-3 h-3" />}
+                  {scout.status === "suspended" && <XCircle className="w-3 h-3" />}
                   {scout.status.toUpperCase()}
                 </span>
               </div>

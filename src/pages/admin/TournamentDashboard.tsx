@@ -1,429 +1,270 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Radio, Clock, Trophy, MapPin, AlertTriangle, Zap, Timer, Target,
   ChevronRight, Activity, Signal, Wifi, Play, Pause, SkipForward,
-  TrendingUp, Users, Shield, ArrowUpRight, Eye,
+  TrendingUp, Users, Shield, ArrowUpRight, Eye, CloudRain,
+  Plus, Edit3, CheckCircle2, FileText, BarChart2,
 } from "lucide-react";
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, BarChart, Bar,
-} from "recharts";
+import { toast } from "sonner";
 
 /* ── mock data ── */
-const liveMatches = [
+const liveMatchesData = [
   {
     id: "M-101", home: "Garuda Muda FC", away: "Elang Jaya", homeScore: 2, awayScore: 1,
-    minute: 67, status: "live", venue: "GBK Mini Field A", group: "Group A",
-    events: [
-      { min: 12, type: "goal", team: "home", player: "Ahmad Rizki" },
-      { min: 34, type: "yellow", team: "away", player: "Rendi Saputra" },
-      { min: 41, type: "goal", team: "away", player: "Budi Santoso" },
-      { min: 58, type: "goal", team: "home", player: "Dimas Pratama" },
-    ],
+    minute: 67, status: "LIVE", venue: "GBK Mini Field A", group: "Group A",
+    category: "U12 - 2014"
   },
   {
     id: "M-102", home: "Rajawali United", away: "Banteng FC", homeScore: 0, awayScore: 0,
-    minute: 23, status: "live", venue: "GBK Mini Field B", group: "Group A",
-    events: [
-      { min: 18, type: "yellow", team: "home", player: "Fajar M." },
-    ],
+    minute: 23, status: "LIVE", venue: "GBK Mini Field B", group: "Group A",
+    category: "U12 - 2014"
   },
   {
     id: "M-103", home: "Singa Putih", away: "Harimau FC", homeScore: 1, awayScore: 3,
-    minute: 88, status: "live", venue: "Senayan Training Ground", group: "Group B",
-    events: [
-      { min: 5, type: "goal", team: "away", player: "Galih P." },
-      { min: 22, type: "goal", team: "home", player: "Irfan S." },
-      { min: 55, type: "goal", team: "away", player: "Joko S." },
-      { min: 72, type: "red", team: "home", player: "Hendra W." },
-      { min: 80, type: "goal", team: "away", player: "Galih P." },
-    ],
+    minute: 0, status: "HT", venue: "Senayan Training Ground", group: "Group B",
+    category: "U12 - 2014"
   },
 ];
 
-const upcomingMatches = [
-  { id: "M-104", home: "Naga Emas", away: "Macan Kumbang FC", time: "15:30", venue: "GBK Mini Field A", group: "Group B" },
-  { id: "M-105", home: "Garuda Muda FC", away: "Rajawali United", time: "17:00", venue: "GBK Mini Field B", group: "Group A" },
-  { id: "M-106", home: "Elang Jaya", away: "Banteng FC", time: "17:00", venue: "Senayan Training Ground", group: "Group A" },
-];
+const CalendarCheck = ({ className }: { className?: string }) => <Clock className={className} />; // Placeholder
 
-const standings = [
-  { pos: 1, team: "Garuda Muda FC", p: 4, w: 3, d: 1, l: 0, gf: 10, ga: 3, pts: 10 },
-  { pos: 2, team: "Elang Jaya", p: 4, w: 2, d: 1, l: 1, gf: 7, ga: 5, pts: 7 },
-  { pos: 3, team: "Rajawali United", p: 4, w: 1, d: 2, l: 1, gf: 5, ga: 4, pts: 5 },
-  { pos: 4, team: "Banteng FC", p: 4, w: 0, d: 0, l: 4, gf: 2, ga: 12, pts: 0 },
+const tournamentKPIs = [
+  { label: "Total Teams", value: "32", icon: Users, color: "text-blue-500" },
+  { label: "Matches Scheduled", value: "64", icon: CalendarCheck, color: "text-purple-500" },
+  { label: "Matches Completed", value: "18", icon: Trophy, color: "text-emerald-500" },
+  { label: "Pending Reports", value: "4", icon: FileText, color: "text-amber-500" },
+  { label: "Total Goals", value: "142", icon: Target, color: "text-destructive" },
+  { label: "Fair Play Index", value: "8.4", icon: Shield, color: "text-cyan-500" },
 ];
-
-const goalTimeline = [
-  { period: "0-15", goals: 8 },
-  { period: "16-30", goals: 14 },
-  { period: "31-45", goals: 12 },
-  { period: "46-60", goals: 18 },
-  { period: "61-75", goals: 22 },
-  { period: "76-90", goals: 16 },
-];
-
-const controlStats = [
-  { icon: Radio, label: "Live Matches", value: "3", color: "text-destructive", pulse: true },
-  { icon: Clock, label: "Upcoming Today", value: "3", color: "text-accent" },
-  { icon: Trophy, label: "Completed", value: "18", color: "text-foreground" },
-  { icon: MapPin, label: "Active Venues", value: "3", color: "text-accent" },
-  { icon: Users, label: "Players Active", value: "66", color: "text-destructive" },
-  { icon: Eye, label: "Commissioners", value: "6", color: "text-accent" },
-];
-
-const pendingReports = [
-  { match: "Naga Emas vs Singa Putih", commissioner: "Pak Hadi", submitted: "14:22", status: "pending" },
-  { match: "Macan FC vs Harimau FC", commissioner: "Pak Joko", submitted: "12:05", status: "approved" },
-  { match: "Garuda vs Banteng", commissioner: "Pak Surya", submitted: "10:30", status: "flagged" },
-];
-
-const eventTypeConfig = {
-  goal: { emoji: "⚽", color: "text-accent" },
-  yellow: { emoji: "🟡", color: "text-yellow-400" },
-  red: { emoji: "🔴", color: "text-destructive" },
-};
 
 const TournamentDashboard = () => {
-  const [selectedGroup, setSelectedGroup] = useState("Group A");
+  const [countdown, setCountdown] = useState("00:14:22");
+  const [liveMatches, setLiveMatches] = useState(liveMatchesData);
+
+  // Fake countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        const parts = prev.split(":").map(Number);
+        let [h, m, s] = parts;
+        if (s > 0) s--;
+        else {
+          s = 59;
+          if (m > 0) m--;
+          else {
+            m = 59;
+            if (h > 0) h--;
+          }
+        }
+        return [h, m, s].map(v => String(v).padStart(2, "0")).join(":");
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleUpdateScore = (id: string, side: 'home' | 'away', delta: number) => {
+    setLiveMatches(prev => prev.map(m => {
+      if (m.id === id) {
+        return {
+          ...m,
+          [side === 'home' ? 'homeScore' : 'awayScore']: Math.max(0, m[side === 'home' ? 'homeScore' : 'awayScore'] + delta)
+        };
+      }
+      return m;
+    }));
+    toast.success("Score updated successfully");
+  };
 
   return (
-    <div className="space-y-5 max-w-[1600px] mx-auto">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-oswald font-bold text-foreground uppercase tracking-wider flex items-center gap-3">
-            <Signal className="w-6 h-6 text-destructive animate-pulse-neon" />
-            Tournament Control Center
-          </h1>
-          <p className="text-xs font-montserrat text-muted-foreground mt-1">
-            APSSI KU-12 National Championship 2026 • Matchday 5 • Live Operations
-          </p>
+    <div className="space-y-6 max-w-[1600px] mx-auto p-4 md:p-6 bg-slate-950 min-h-screen font-montserrat">
+      
+      {/* ── TOP BAR / COMMAND HEADER ── */}
+      <div className="glass-panel p-4 md:p-6 rounded-xl border border-white/10 flex flex-col lg:flex-row items-center justify-between gap-6 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-destructive to-emerald-500" />
+        
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 rounded-xl bg-destructive/20 neon-border-red flex items-center justify-center border border-destructive/30 relative group overflow-hidden">
+            <Trophy className="w-10 h-10 text-destructive relative z-10 group-hover:scale-110 transition-transform" />
+            <div className="absolute inset-0 bg-destructive/10 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-oswald font-bold text-white uppercase tracking-tighter">
+                APSSI National Championship
+              </h1>
+              <span className="px-2 py-0.5 rounded bg-blue-600/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest border border-blue-600/30">
+                Phase: Nasional
+              </span>
+            </div>
+            <p className="text-slate-400 text-sm font-medium mt-1 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-emerald-500" />
+              Category: <span className="text-white font-bold">U12 – 2014 Generation</span>
+              <span className="text-slate-600">•</span>
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5" /> Jakarta, Indonesia
+              </span>
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 glass-card rounded-full px-3 py-1.5 neon-border-red relative z-0">
-            <span className="w-2 h-2 rounded-full bg-destructive animate-pulse-neon relative z-10" />
-            <span className="text-[10px] font-montserrat font-bold text-destructive uppercase tracking-wider relative z-10">
-              3 LIVE
-            </span>
-          </span>
-          <span className="flex items-center gap-1.5 glass-card rounded-full px-3 py-1.5 relative z-0">
-            <Wifi className="w-3 h-3 text-accent relative z-10" />
-            <span className="text-[10px] font-montserrat font-bold text-accent uppercase tracking-wider relative z-10">
-              All Systems Operational
-            </span>
-          </span>
+
+        <div className="flex items-center gap-8">
+          {/* Weather Placeholder */}
+          <div className="hidden xl:flex items-center gap-3 px-4 border-l border-white/10">
+            <CloudRain className="w-6 h-6 text-blue-400" />
+            <div>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest leading-none">Weather</p>
+              <p className="text-sm text-white font-bold mt-1">28°C Light Rain</p>
+            </div>
+          </div>
+
+          {/* Countdown Timer */}
+          <div className="flex flex-col items-center lg:items-end gap-1">
+            <div className="flex items-center gap-2 text-xs text-slate-500 font-bold uppercase tracking-[0.2em]">
+              <Timer className="w-3.5 h-3.5 text-destructive" />
+              Next Kickoff In
+            </div>
+            <div className="text-3xl md:text-4xl font-oswald font-bold text-white tracking-widest flex items-baseline gap-1">
+              {countdown}
+              <span className="text-[10px] text-destructive animate-pulse ml-2 uppercase">Live Sync</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Control Stats Strip */}
-      <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
-        {controlStats.map((stat) => (
-          <div key={stat.label} className="glass-card-gradient rounded-lg p-3 relative z-0">
-            <div className="relative z-10 flex items-center gap-2.5">
-              <stat.icon className={`w-5 h-5 ${stat.color} ${stat.pulse ? "animate-pulse-neon" : ""}`} />
-              <div>
-                <p className="text-xl font-oswald font-bold text-foreground leading-none">{stat.value}</p>
-                <p className="text-[8px] font-montserrat font-medium text-muted-foreground uppercase tracking-wider mt-0.5">
-                  {stat.label}
-                </p>
+      {/* ── KPI PANELS ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {tournamentKPIs.map((kpi, i) => (
+          <div key={i} className="glass-card p-5 border border-white/10 rounded-xl glow-hover transition group">
+            <div className="flex items-center justify-between mb-3">
+              <div className={`p-2.5 rounded-lg bg-slate-900/80 ${kpi.color} group-hover:scale-110 transition-transform`}>
+                <kpi.icon className="w-5 h-5" />
               </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-600" />
             </div>
+            <p className="text-2xl font-oswald font-bold text-white">{kpi.value}</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mt-1 leading-tight">{kpi.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Live Match Monitor — Full Width */}
-      <div className="glass-card rounded-lg p-5 neon-border-red relative z-0">
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-5 bg-destructive rounded-full" />
-              <h2 className="text-sm font-oswald font-bold text-foreground uppercase tracking-[0.15em]">
-                Live Match Monitor
-              </h2>
-              <span className="w-2 h-2 rounded-full bg-destructive animate-pulse-neon ml-1" />
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        {/* ── LIVE MATCH TRACKER ── */}
+        <div className="xl:col-span-3 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-6 bg-destructive rounded-full" />
+              <h2 className="text-xl font-oswald font-bold text-white uppercase tracking-widest">Live Match Tracker</h2>
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[10px] font-bold border border-destructive/20 uppercase tracking-widest animate-pulse">
+                <Wifi className="w-3 h-3" /> {liveMatches.length} Ongoing
+              </span>
             </div>
-            <span className="text-[9px] font-montserrat text-muted-foreground">Auto-refresh: 30s</span>
+            <button className="text-xs text-blue-400 font-bold hover:underline uppercase tracking-widest">Broadcast Console</button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
             {liveMatches.map((match) => (
-              <div key={match.id} className="glass-card rounded-lg p-4 relative z-0 border border-destructive/20">
-                <div className="relative z-10">
-                  {/* Match Header */}
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[9px] font-montserrat font-bold text-muted-foreground">{match.group} • {match.id}</span>
-                    <span className="flex items-center gap-1 text-[9px] font-montserrat font-bold text-destructive">
-                      <Timer className="w-3 h-3" /> {match.minute}'
-                    </span>
+              <div key={match.id} className="glass-card border border-white/10 rounded-2xl overflow-hidden group">
+                <div className="bg-slate-900/50 p-3 flex justify-between items-center border-b border-white/5">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{match.venue}</span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${match.status === 'LIVE' ? 'bg-destructive text-white animate-pulse' : 'bg-amber-500/20 text-amber-400'}`}>
+                    {match.status === 'LIVE' ? `${match.minute}'` : match.status}
+                  </span>
+                </div>
+                
+                <div className="p-6">
+                  <div className="flex items-center justify-between gap-4 mb-6">
+                    <div className="flex-1 text-center">
+                      <div className="w-12 h-12 rounded-full bg-slate-800 mx-auto mb-2 border border-white/5 flex items-center justify-center">
+                        <Users className="w-6 h-6 text-slate-400" />
+                      </div>
+                      <p className="text-xs font-bold text-white uppercase leading-tight line-clamp-2 h-8">{match.home}</p>
+                    </div>
+                    
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="text-4xl font-oswald font-bold text-white flex items-center gap-3">
+                        <span>{match.homeScore}</span>
+                        <span className="text-slate-700 text-2xl">:</span>
+                        <span>{match.awayScore}</span>
+                      </div>
+                      <span className="text-[10px] text-slate-600 font-black uppercase tracking-[0.3em]">Score</span>
+                    </div>
+
+                    <div className="flex-1 text-center">
+                      <div className="w-12 h-12 rounded-full bg-slate-800 mx-auto mb-2 border border-white/5 flex items-center justify-center">
+                        <Users className="w-6 h-6 text-slate-400" />
+                      </div>
+                      <p className="text-xs font-bold text-white uppercase leading-tight line-clamp-2 h-8">{match.away}</p>
+                    </div>
                   </div>
 
-                  {/* Score */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex-1">
-                      <p className="text-xs font-oswald font-bold text-foreground uppercase truncate">{match.home}</p>
+                  {/* Quick Score Update Controls */}
+                  <div className="flex items-center gap-2 p-2 bg-slate-950/50 rounded-xl border border-white/5">
+                    <div className="flex-1 flex justify-center gap-1">
+                      <button onClick={() => handleUpdateScore(match.id, 'home', 1)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-500 rounded-lg transition"><Plus className="w-4 h-4" /></button>
+                      <button onClick={() => handleUpdateScore(match.id, 'home', -1)} className="p-1.5 hover:bg-red-500/20 text-red-500 rounded-lg transition"><Pause className="w-4 h-4" /></button>
                     </div>
-                    <div className="flex items-center gap-2 mx-3">
-                      <span className="text-3xl font-oswald font-black text-foreground">{match.homeScore}</span>
-                      <span className="text-lg font-oswald text-muted-foreground">-</span>
-                      <span className="text-3xl font-oswald font-black text-foreground">{match.awayScore}</span>
-                    </div>
-                    <div className="flex-1 text-right">
-                      <p className="text-xs font-oswald font-bold text-foreground uppercase truncate">{match.away}</p>
-                    </div>
-                  </div>
-
-                  {/* Venue */}
-                  <div className="flex items-center gap-1 mb-3 text-[9px] font-montserrat text-muted-foreground">
-                    <MapPin className="w-3 h-3" /> {match.venue}
-                  </div>
-
-                  {/* Match Timeline */}
-                  <div className="space-y-1.5 max-h-[100px] overflow-y-auto">
-                    {match.events.map((evt, i) => {
-                      const cfg = eventTypeConfig[evt.type as keyof typeof eventTypeConfig];
-                      return (
-                        <div key={i} className="flex items-center gap-2 text-[10px] font-montserrat">
-                          <span className="w-6 text-right font-bold text-muted-foreground">{evt.min}'</span>
-                          <span>{cfg.emoji}</span>
-                          <span className={`font-medium ${cfg.color}`}>{evt.player}</span>
-                          <span className="text-muted-foreground ml-auto">{evt.team === "home" ? match.home.split(" ")[0] : match.away.split(" ")[0]}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Match minute progress bar */}
-                  <div className="mt-3">
-                    <div className="w-full h-1 rounded-full bg-muted/30 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-destructive transition-all duration-500"
-                        style={{ width: `${Math.min(match.minute / 90 * 100, 100)}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-1 text-[8px] font-montserrat text-muted-foreground">
-                      <span>KO</span>
-                      <span>HT</span>
-                      <span>FT</span>
+                    <div className="w-px h-4 bg-white/10" />
+                    <div className="flex-1 flex justify-center gap-1">
+                      <button onClick={() => handleUpdateScore(match.id, 'away', 1)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-500 rounded-lg transition"><Plus className="w-4 h-4" /></button>
+                      <button onClick={() => handleUpdateScore(match.id, 'away', -1)} className="p-1.5 hover:bg-red-500/20 text-red-500 rounded-lg transition"><Pause className="w-4 h-4" /></button>
                     </div>
                   </div>
                 </div>
+                
+                <button className="w-full py-3 bg-slate-900/80 hover:bg-slate-800 text-[10px] font-bold text-slate-400 hover:text-white uppercase tracking-widest transition flex items-center justify-center gap-2">
+                  <Edit3 className="w-3.5 h-3.5" /> Open Match Console
+                </button>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Middle Row: Standings + Upcoming */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Standings — 3 cols */}
-        <div className="lg:col-span-3 glass-card rounded-lg p-5 relative z-0">
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 gradient-line-vertical rounded-full" />
-                <h2 className="text-sm font-oswald font-bold text-foreground uppercase tracking-[0.15em]">
-                  Standings
-                </h2>
+        {/* ── QUICK ACTIONS ── */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
+            <h2 className="text-xl font-oswald font-bold text-white uppercase tracking-widest">Quick Actions</h2>
+          </div>
+          
+          <div className="space-y-3">
+            {[
+              { label: "Create Match", icon: Plus, desc: "Add new fixture to schedule", color: "bg-blue-600" },
+              { label: "Update Scores", icon: Edit3, desc: "Manual score override", color: "bg-slate-800" },
+              { label: "Approve Report", icon: CheckCircle2, desc: "Finalize match data", color: "bg-emerald-600" },
+              { label: "Generate Standings", icon: BarChart2, desc: "Recalculate table points", color: "bg-purple-600" },
+            ].map((action, i) => (
+              <button 
+                key={i}
+                className="w-full glass-card p-4 border border-white/10 rounded-xl hover:border-white/20 transition flex items-center gap-4 text-left group"
+              >
+                <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                  <action.icon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white uppercase tracking-wide">{action.label}</p>
+                  <p className="text-[10px] text-slate-500 font-medium">{action.desc}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-700 ml-auto group-hover:text-white transition-colors" />
+              </button>
+            ))}
+          </div>
+
+          <div className="glass-card p-5 border border-white/10 rounded-xl mt-6">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+              <Signal className="w-3 h-3 text-destructive animate-pulse" />
+              System Status
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-slate-400 font-bold uppercase">Data Sync</span>
+                <span className="text-emerald-500 font-black">STABLE</span>
               </div>
-              <div className="flex gap-1">
-                {["Group A", "Group B"].map((g) => (
-                  <button
-                    key={g}
-                    onClick={() => setSelectedGroup(g)}
-                    className={`text-[10px] font-montserrat font-bold px-2.5 py-1 rounded transition-colors ${
-                      selectedGroup === g
-                        ? "bg-destructive text-destructive-foreground"
-                        : "text-muted-foreground hover:text-foreground bg-muted/30"
-                    }`}
-                  >
-                    {g}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-slate-400 font-bold uppercase">Broadcast Latency</span>
+                <span className="text-white font-black">1.2s</span>
               </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    {["#", "Team", "P", "W", "D", "L", "GF", "GA", "PTS"].map((h) => (
-                      <th key={h} className="text-[9px] font-montserrat font-bold text-muted-foreground uppercase tracking-widest px-2 py-2 text-left first:pl-0">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {standings.map((row) => (
-                    <tr key={row.pos} className={`border-b border-border/30 ${row.pos <= 2 ? "bg-accent/5" : ""}`}>
-                      <td className="px-2 py-2.5 first:pl-0">
-                        <span className={`text-xs font-oswald font-bold ${row.pos <= 2 ? "text-accent" : "text-muted-foreground"}`}>
-                          {row.pos}
-                        </span>
-                      </td>
-                      <td className="px-2 py-2.5 text-xs font-montserrat font-semibold text-foreground">{row.team}</td>
-                      {[row.p, row.w, row.d, row.l, row.gf, row.ga].map((v, i) => (
-                        <td key={i} className="px-2 py-2.5 text-xs font-montserrat text-muted-foreground">{v}</td>
-                      ))}
-                      <td className="px-2 py-2.5 text-sm font-oswald font-black text-foreground">{row.pts}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex items-center gap-2 mt-3">
-              <span className="w-3 h-1 rounded bg-accent" />
-              <span className="text-[9px] font-montserrat text-muted-foreground">Qualifies for knockout stage</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Upcoming Matches — 2 cols */}
-        <div className="lg:col-span-2 glass-card rounded-lg p-5 relative z-0">
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-1 h-4 gradient-line-vertical rounded-full" />
-              <h2 className="text-sm font-oswald font-bold text-foreground uppercase tracking-[0.15em]">
-                Upcoming Matches
-              </h2>
-            </div>
-            <div className="space-y-2.5">
-              {upcomingMatches.map((match) => (
-                <div key={match.id} className="p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[9px] font-montserrat font-bold text-muted-foreground">{match.group} • {match.id}</span>
-                    <span className="flex items-center gap-1 text-[10px] font-montserrat font-bold text-accent">
-                      <Clock className="w-3 h-3" /> {match.time}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-oswald font-bold text-foreground uppercase">{match.home}</span>
-                    <span className="text-[10px] font-montserrat font-bold text-muted-foreground mx-2">vs</span>
-                    <span className="text-xs font-oswald font-bold text-foreground uppercase">{match.away}</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-1.5 text-[9px] font-montserrat text-muted-foreground">
-                    <MapPin className="w-3 h-3" /> {match.venue}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Row: Goal Timeline + Match Reports */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Goal Distribution */}
-        <div className="glass-card rounded-lg p-5 relative z-0">
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-1 h-4 gradient-line-vertical rounded-full" />
-              <h2 className="text-sm font-oswald font-bold text-foreground uppercase tracking-[0.15em]">
-                Goal Distribution by Period
-              </h2>
-            </div>
-            <div className="h-[180px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={goalTimeline}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsla(216,40%,22%,0.5)" />
-                  <XAxis dataKey="period" tick={{ fontSize: 10, fill: "hsl(215,20%,55%)" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: "hsl(215,20%,55%)" }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: "hsl(216,60%,18%)", border: "1px solid hsl(216,40%,22%)", borderRadius: "8px", fontSize: "11px" }} />
-                  <Bar dataKey="goals" fill="hsl(349,100%,55%)" radius={[4, 4, 0, 0]} barSize={28} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        {/* Match Report Validation */}
-        <div className="glass-card rounded-lg p-5 relative z-0">
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 gradient-line-vertical rounded-full" />
-                <h2 className="text-sm font-oswald font-bold text-foreground uppercase tracking-[0.15em]">
-                  Match Report Validation
-                </h2>
-              </div>
-              <span className="text-[10px] font-montserrat font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
-                1 Flagged
-              </span>
-            </div>
-            <div className="space-y-2.5">
-              {pendingReports.map((report, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
-                  <div>
-                    <p className="text-xs font-montserrat font-semibold text-foreground">{report.match}</p>
-                    <p className="text-[10px] font-montserrat text-muted-foreground">
-                      {report.commissioner} • {report.submitted}
-                    </p>
-                  </div>
-                  <span className={`text-[9px] font-montserrat font-bold px-2 py-0.5 rounded-full ${
-                    report.status === "approved" ? "text-accent bg-accent/10" :
-                    report.status === "flagged" ? "text-destructive bg-destructive/10" :
-                    "text-muted-foreground bg-muted/40"
-                  }`}>
-                    {report.status.toUpperCase()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bracket Preview */}
-      <div className="glass-card rounded-lg p-5 relative z-0">
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-4 gradient-line-vertical rounded-full" />
-              <h2 className="text-sm font-oswald font-bold text-foreground uppercase tracking-[0.15em]">
-                Knockout Bracket Preview
-              </h2>
-            </div>
-            <span className="text-[9px] font-montserrat font-medium text-muted-foreground">
-              Bracket locks after group stage completion
-            </span>
-          </div>
-          <div className="flex items-center justify-center gap-4 overflow-x-auto py-4">
-            {/* Quarterfinals */}
-            <div className="space-y-3 shrink-0">
-              <p className="text-[9px] font-montserrat font-bold text-muted-foreground text-center uppercase tracking-widest mb-2">
-                Quarterfinals
-              </p>
-              {[["A1 vs B2", "TBD"], ["B1 vs A2", "TBD"], ["C1 vs D2", "TBD"], ["D1 vs C2", "TBD"]].map(([label], i) => (
-                <div key={i} className="w-40 p-2.5 rounded-lg bg-muted/20 border border-border/30">
-                  <p className="text-[10px] font-oswald font-bold text-foreground text-center uppercase">{label}</p>
-                  <p className="text-[8px] font-montserrat text-muted-foreground text-center mt-0.5">Pending</p>
-                </div>
-              ))}
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
-            {/* Semifinals */}
-            <div className="space-y-3 shrink-0">
-              <p className="text-[9px] font-montserrat font-bold text-muted-foreground text-center uppercase tracking-widest mb-2">
-                Semifinals
-              </p>
-              {["QF1 Winner vs QF2 Winner", "QF3 Winner vs QF4 Winner"].map((label, i) => (
-                <div key={i} className="w-48 p-3 rounded-lg bg-muted/20 border border-border/30">
-                  <p className="text-[10px] font-oswald font-bold text-foreground text-center uppercase">{label}</p>
-                  <p className="text-[8px] font-montserrat text-muted-foreground text-center mt-0.5">Pending</p>
-                </div>
-              ))}
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
-            {/* Final */}
-            <div className="space-y-3 shrink-0">
-              <p className="text-[9px] font-montserrat font-bold text-muted-foreground text-center uppercase tracking-widest mb-2">
-                Final
-              </p>
-              <div className="w-52 p-4 rounded-lg bg-destructive/5 border border-destructive/20 neon-border-red">
-                <Trophy className="w-5 h-5 text-destructive mx-auto mb-1" />
-                <p className="text-[10px] font-oswald font-bold text-foreground text-center uppercase">SF1 Winner vs SF2 Winner</p>
-                <p className="text-[8px] font-montserrat text-muted-foreground text-center mt-0.5">Championship Match</p>
+              <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                <div className="w-3/4 h-full bg-emerald-500 animate-pulse" />
               </div>
             </div>
           </div>

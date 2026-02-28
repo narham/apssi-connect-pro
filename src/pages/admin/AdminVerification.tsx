@@ -459,6 +459,13 @@ const AdminVerification = () => {
 
   const selectedRequest = requests.find((r) => r.id === selectedVerificationId);
 
+  const statusConfig = {
+    pending: { label: "Pending", icon: Clock, className: "status-pending" },
+    review: { label: "Under Review", icon: ShieldCheck, className: "status-pending" },
+    approved: { label: "Approved", icon: CheckCircle2, className: "status-approved" },
+    rejected: { label: "Rejected", icon: XCircle, className: "status-rejected" },
+  };
+
   const handleApprove = (id: string, notes: string) => {
     setRequests(
       requests.map((r) =>
