@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Users,
   ShieldCheck,
@@ -11,61 +11,53 @@ import {
   CheckCircle2,
   XCircle,
   ArrowUpRight,
+  Loader2,
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-
-const overviewStats = [
-  { icon: Users, label: "Total Players", value: "2,847", change: "+128 this month", trend: "up", variant: "red" as const },
-  { icon: ShieldCheck, label: "Pending Verifications", value: "43", change: "12 urgent", trend: "alert", variant: "red" as const },
-  { icon: Building2, label: "Registered Clubs", value: "186", change: "+12 this month", trend: "up", variant: "green" as const },
-  { icon: Trophy, label: "Active Tournaments", value: "8", change: "3 ongoing", trend: "up", variant: "green" as const },
-  { icon: Eye, label: "Active Scouts", value: "34", change: "+5 this week", trend: "up", variant: "green" as const },
-  { icon: TrendingUp, label: "Match Reports", value: "412", change: "98% completed", trend: "up", variant: "red" as const },
-];
-
-const registrationData = [
-  { month: "Aug", players: 180, clubs: 12 },
-  { month: "Sep", players: 220, clubs: 18 },
-  { month: "Oct", players: 310, clubs: 22 },
-  { month: "Nov", players: 280, clubs: 20 },
-  { month: "Dec", players: 420, clubs: 28 },
-  { month: "Jan", players: 380, clubs: 25 },
-  { month: "Feb", players: 490, clubs: 32 },
-];
-
-const verificationQueue = [
-  { name: "Rizki Fauzan", club: "Garuda Muda FC", type: "New Registration", status: "pending", time: "2m ago" },
-  { name: "Andi Pratama", club: "Elang Jaya", type: "Document Update", status: "pending", time: "8m ago" },
-  { name: "Dimas Arya", club: "Rajawali United", type: "Age Verification", status: "urgent", time: "15m ago" },
-  { name: "Budi Hartono", club: "Banteng FC", type: "Transfer Request", status: "pending", time: "22m ago" },
-  { name: "Farhan Yusuf", club: "Singa Putih", type: "New Registration", status: "review", time: "30m ago" },
-];
-
-const recentActivity = [
-  { action: "Player verified", detail: "Ahmad Rizki → Garuda Muda FC", icon: CheckCircle2, color: "text-accent" },
-  { action: "Verification rejected", detail: "Document mismatch - Fajar M.", icon: XCircle, color: "text-destructive" },
-  { action: "New club registered", detail: "Macan Kumbang FC - Jakarta", icon: Building2, color: "text-accent" },
-  { action: "Scout access granted", detail: "Coach Hendrik - Provincial", icon: Eye, color: "text-neon-green" },
-  { action: "Match report filed", detail: "Garuda Muda vs Elang Jaya (3-1)", icon: Trophy, color: "text-foreground" },
-  { action: "Urgent: Age dispute", detail: "Player #2847 - Banteng FC", icon: AlertTriangle, color: "text-destructive" },
-];
-
-const provinceData = [
-  { province: "DKI Jakarta", count: 420 },
-  { province: "Jawa Barat", count: 380 },
-  { province: "Jawa Timur", count: 310 },
-  { province: "Banten", count: 250 },
-  { province: "Jawa Tengah", count: 220 },
-  { province: "Sulawesi Sel.", count: 180 },
-];
+import { useDashboardStats, useVerificationQueue, useRecentActivity } from "@/hooks/useAdminData";
+import { formatDistanceToNow } from "date-fns";
 
 const AdminDashboard = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: queue, isLoading: queueLoading } = useVerificationQueue();
+  const { data: activity, isLoading: activityLoading } = useRecentActivity();
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+  const isLoading = statsLoading;
+
+  const overviewStats = stats ? [
+    { icon: Users, label: "Total Players", value: stats.totalPlayers.toLocaleString(), change: `${stats.pendingVerifications} pending`, trend: "up" as const, variant: "red" as const },
+    { icon: ShieldCheck, label: "Pending Verifications", value: String(stats.pendingVerifications), change: "Requires review", trend: "alert" as const, variant: "red" as const },
+    { icon: Building2, label: "Registered Clubs", value: String(stats.totalClubs), change: "Active clubs", trend: "up" as const, variant: "green" as const },
+    { icon: Trophy, label: "Active Tournaments", value: String(stats.activeTournaments), change: "In progress", trend: "up" as const, variant: "green" as const },
+    { icon: Eye, label: "Active Scouts", value: String(stats.scoutCount), change: "Registered", trend: "up" as const, variant: "green" as const },
+    { icon: TrendingUp, label: "Match Reports", value: String(stats.totalMatches), change: "Total matches", trend: "up" as const, variant: "red" as const },
+  ] : [];
+
+  // Static chart data (would need time-series tables for real trends)
+  const registrationData = [
+    { month: "Aug", players: 0, clubs: 0 },
+    { month: "Sep", players: 0, clubs: 0 },
+    { month: "Oct", players: 0, clubs: 0 },
+    { month: "Nov", players: 0, clubs: 0 },
+    { month: "Dec", players: 0, clubs: 0 },
+    { month: "Jan", players: 0, clubs: 0 },
+    { month: "Feb", players: stats?.totalPlayers ?? 0, clubs: stats?.totalClubs ?? 0 },
+  ];
+
+  const activityItems = (activity ?? []).map((item: any) => {
+    const actionMap: Record<string, { label: string; icon: any; color: string }> = {
+      OVERRIDE: { label: "Admin override", icon: ShieldCheck, color: "text-accent" },
+      VERIFY: { label: "Player verified", icon: CheckCircle2, color: "text-accent" },
+      REJECT: { label: "Verification rejected", icon: XCircle, color: "text-destructive" },
+    };
+    const mapped = actionMap[item.action_type] || { label: item.action_type, icon: Clock, color: "text-muted-foreground" };
+    return {
+      action: mapped.label,
+      detail: `${item.players?.full_name ?? 'Unknown'} — ${item.new_status ?? ''}`,
+      icon: mapped.icon,
+      color: mapped.color,
+    };
+  });
 
   if (isLoading) {
     return (
@@ -99,7 +91,7 @@ const AdminDashboard = () => {
             Command Center
           </h1>
           <p className="text-xs font-montserrat text-muted-foreground mt-1">
-            Tournament operations overview • Last updated: 2 minutes ago
+            Tournament operations overview • Live data
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -207,17 +199,25 @@ const AdminDashboard = () => {
                 Activity Feed
               </h2>
             </div>
-            <div className="space-y-3">
-              {recentActivity.map((item, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <item.icon className={`w-4 h-4 mt-0.5 shrink-0 ${item.color}`} />
-                  <div className="min-w-0">
-                    <p className="text-xs font-montserrat font-semibold text-foreground">{item.action}</p>
-                    <p className="text-[10px] font-montserrat text-muted-foreground truncate">{item.detail}</p>
+            {activityLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+              </div>
+            ) : activityItems.length === 0 ? (
+              <p className="text-xs font-montserrat text-muted-foreground text-center py-8">No recent activity</p>
+            ) : (
+              <div className="space-y-3">
+                {activityItems.map((item: any, i: number) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <item.icon className={`w-4 h-4 mt-0.5 shrink-0 ${item.color}`} />
+                    <div className="min-w-0">
+                      <p className="text-xs font-montserrat font-semibold text-foreground">{item.action}</p>
+                      <p className="text-[10px] font-montserrat text-muted-foreground truncate">{item.detail}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -235,60 +235,69 @@ const AdminDashboard = () => {
                 </h2>
               </div>
               <span className="text-[10px] font-montserrat font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
-                {verificationQueue.length} Pending
+                {stats?.pendingVerifications ?? 0} Pending
               </span>
             </div>
-            <div className="space-y-2">
-              {verificationQueue.map((item, i) => (
-                <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                    <span className="text-[10px] font-oswald font-bold text-foreground">
-                      {item.name.split(" ").map(n => n[0]).join("")}
-                    </span>
+            {queueLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+              </div>
+            ) : (queue ?? []).length === 0 ? (
+              <p className="text-xs font-montserrat text-muted-foreground text-center py-8">No pending verifications</p>
+            ) : (
+              <div className="space-y-2">
+                {(queue ?? []).map((item: any) => (
+                  <div key={item.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                      <span className="text-[10px] font-oswald font-bold text-foreground">
+                        {item.full_name.split(" ").map((n: string) => n[0]).join("")}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-montserrat font-semibold text-foreground truncate">{item.full_name}</p>
+                      <p className="text-[10px] font-montserrat text-muted-foreground">
+                        {item.clubs?.name ?? 'No Club'} • Manual Review
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[9px] font-montserrat text-muted-foreground">
+                        {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-montserrat font-semibold text-foreground truncate">{item.name}</p>
-                    <p className="text-[10px] font-montserrat text-muted-foreground">{item.club} • {item.type}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[9px] font-montserrat text-muted-foreground">{item.time}</span>
-                    <span className={`w-2 h-2 rounded-full ${
-                      item.status === "urgent" ? "bg-destructive animate-pulse-neon" :
-                      item.status === "review" ? "bg-accent" : "bg-muted-foreground"
-                    }`} />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Province Distribution */}
+        {/* Province Distribution - placeholder since we don't have per-province player data easily */}
         <div className="glass-card rounded-lg p-5 relative z-0">
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-1 h-4 gradient-line-vertical rounded-full" />
               <h2 className="text-sm font-oswald font-bold text-foreground uppercase tracking-[0.15em]">
-                Player Distribution by Province
+                System Summary
               </h2>
             </div>
-            <div className="h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={provinceData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsla(216,40%,22%,0.5)" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(215,20%,55%)" }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="province" type="category" tick={{ fontSize: 10, fill: "hsl(215,20%,55%)" }} axisLine={false} tickLine={false} width={80} />
-                  <Tooltip
-                    contentStyle={{
-                      background: "hsl(216,60%,18%)",
-                      border: "1px solid hsl(216,40%,22%)",
-                      borderRadius: "8px",
-                      fontSize: "11px",
-                    }}
-                  />
-                  <Bar dataKey="count" fill="hsl(349,100%,55%)" radius={[0, 4, 4, 0]} barSize={16} />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg bg-muted/30 text-center">
+                <p className="text-2xl font-oswald font-bold text-foreground">{stats?.totalPlayers ?? 0}</p>
+                <p className="text-[9px] font-montserrat font-medium text-muted-foreground uppercase tracking-wider">Players</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/30 text-center">
+                <p className="text-2xl font-oswald font-bold text-foreground">{stats?.totalClubs ?? 0}</p>
+                <p className="text-[9px] font-montserrat font-medium text-muted-foreground uppercase tracking-wider">Clubs</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/30 text-center">
+                <p className="text-2xl font-oswald font-bold text-foreground">{stats?.activeTournaments ?? 0}</p>
+                <p className="text-[9px] font-montserrat font-medium text-muted-foreground uppercase tracking-wider">Tournaments</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/30 text-center">
+                <p className="text-2xl font-oswald font-bold text-foreground">{stats?.totalMatches ?? 0}</p>
+                <p className="text-[9px] font-montserrat font-medium text-muted-foreground uppercase tracking-wider">Matches</p>
+              </div>
             </div>
           </div>
         </div>
@@ -305,10 +314,10 @@ const AdminDashboard = () => {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { role: "Super Admin", count: 2, color: "bg-destructive" },
-              { role: "Provincial Admin", count: 8, color: "bg-accent" },
-              { role: "Match Commissioner", count: 14, color: "bg-destructive" },
-              { role: "Data Operator", count: 10, color: "bg-accent" },
+              { role: "Super Admin", count: stats?.roleCounts.super_admin ?? 0, color: "bg-destructive" },
+              { role: "Provincial Admin", count: stats?.roleCounts.provincial_admin ?? 0, color: "bg-accent" },
+              { role: "Match Commissioner", count: stats?.roleCounts.match_commissioner ?? 0, color: "bg-destructive" },
+              { role: "Data Operator", count: stats?.roleCounts.data_operator ?? 0, color: "bg-accent" },
             ].map((role) => (
               <div key={role.role} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                 <span className={`w-3 h-3 rounded-full ${role.color} shrink-0`} />
