@@ -300,210 +300,179 @@ const ActivityMonitoring: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Activity Monitoring</h1>
-          <p className="text-slate-400">Track login history and user activities</p>
-        </div>
+    <div className="space-y-6">
+      {/* Search and Filters */}
+      <div className="glass-card p-6 border border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="md:col-span-2 relative">
+            <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by user name or action..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+            />
+          </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="glass-card p-4 border border-white/10">
-            <p className="text-slate-400 text-sm mb-2">Total Logins (24h)</p>
-            <p className="text-2xl font-bold text-white">{mockLoginEvents.length}</p>
-          </div>
-          <div className="glass-card p-4 border border-yellow-600/50">
-            <p className="text-slate-400 text-sm mb-2">Suspicious Logins</p>
-            <p className="text-2xl font-bold text-yellow-300">{suspiciousLogins.length}</p>
-          </div>
-          <div className="glass-card p-4 border border-red-600/50">
-            <p className="text-slate-400 text-sm mb-2">Failed Logins</p>
-            <p className="text-2xl font-bold text-red-300">{failedLogins.length}</p>
-          </div>
-          <div className="glass-card p-4 border border-white/10">
-            <p className="text-slate-400 text-sm mb-2">Activities (24h)</p>
-            <p className="text-2xl font-bold text-white">{mockActivityLogs.length}</p>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="glass-card border border-white/10 mb-6 overflow-hidden">
-          <div className="flex border-b border-white/10">
-            <button
-              onClick={() => setActiveTab("logins")}
-              className={`flex-1 px-6 py-4 font-medium transition ${
-                activeTab === "logins"
-                  ? "text-blue-400 border-b-2 border-blue-400"
-                  : "text-slate-400 hover:text-white"
-              }`}
+          <div className="relative">
+            <Filter className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500 appearance-none"
             >
-              <LogIn className="w-4 h-4 inline mr-2" />
-              Login History ({mockLoginEvents.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("activity")}
-              className={`flex-1 px-6 py-4 font-medium transition ${
-                activeTab === "activity"
-                  ? "text-blue-400 border-b-2 border-blue-400"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              <Clock className="w-4 h-4 inline mr-2" />
-              Activities ({mockActivityLogs.length})
-            </button>
+              <option value="all">All Status</option>
+              <option value="success">Success</option>
+              <option value="failed">Failed</option>
+              <option value="suspicious">Suspicious</option>
+            </select>
           </div>
 
-          {/* Controls */}
-          <div className="p-6 border-b border-white/10 space-y-4">
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex-1 min-w-64 relative">
-                <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search by name, IP, or device..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
-                />
-              </div>
+          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white font-medium transition">
+            <Download className="w-5 h-5" />
+            Export Logs
+          </button>
+        </div>
+      </div>
 
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-              >
-                <option value="all">All Status</option>
-                {activeTab === "logins" ? (
-                  <>
-                    <option value="success">Success</option>
-                    <option value="failed">Failed</option>
-                    <option value="suspicious">Suspicious</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="success">Success</option>
-                    <option value="pending">Pending</option>
-                    <option value="failed">Failed</option>
-                  </>
-                )}
-              </select>
+      {/* Tabs */}
+      <div className="flex gap-4 border-b border-white/10">
+        <button
+          onClick={() => setActiveTab("logins")}
+          className={`pb-4 px-2 text-sm font-medium transition relative ${
+            activeTab === "logins" ? "text-blue-500" : "text-slate-400 hover:text-slate-300"
+          }`}
+        >
+          Login History
+          {activeTab === "logins" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab("activity")}
+          className={`pb-4 px-2 text-sm font-medium transition relative ${
+            activeTab === "activity" ? "text-blue-500" : "text-slate-400 hover:text-slate-300"
+          }`}
+        >
+          Activity Logs
+          {activeTab === "activity" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
+          )}
+        </button>
+      </div>
 
-              <button
-                onClick={handleExportLogs}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition"
-              >
-                <Download className="w-4 h-4" />
-                Export
-              </button>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="divide-y divide-white/10">
-            {activeTab === "logins" ? (
-              filteredLoginEvents.length > 0 ? (
-                filteredLoginEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className="p-6 hover:bg-slate-800/30 transition"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-start gap-4 flex-1">
-                        <div className="mt-1">{getStatusIcon(event.status)}</div>
-                        <div className="flex-1">
-                          <p className="text-white font-medium">{event.userName}</p>
-                          <p className="text-sm text-slate-400">{event.timestamp}</p>
-                          <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
-                            <div>
-                              <p className="text-slate-400">IP Address</p>
-                              <p className="text-white font-mono">{event.ipAddress}</p>
-                            </div>
-                            <div>
-                              <p className="text-slate-400">Device</p>
-                              <p className="text-white">{event.device}</p>
-                            </div>
-                            <div>
-                              <p className="text-slate-400">Location</p>
-                              <p className="text-white">{event.location}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+      {/* Content */}
+      <div className="glass-card border border-white/10 overflow-hidden">
+        {activeTab === "logins" ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-800/50 border-b border-white/10">
+                <tr>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    Timestamp
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    User
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    IP Address
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    Device
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    Location
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {filteredLoginEvents.map((event) => (
+                  <tr key={event.id} className="hover:bg-slate-800/30 transition">
+                    <td className="px-6 py-4 text-sm text-slate-300 font-mono">
+                      {event.timestamp}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-white">{event.userName}</div>
+                      <div className="text-xs text-slate-400">{event.userId}</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-400">{event.ipAddress}</td>
+                    <td className="px-6 py-4 text-sm text-slate-400">{event.device}</td>
+                    <td className="px-6 py-4 text-sm text-slate-400">{event.location}</td>
+                    <td className="px-6 py-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                          event.status
-                        )}`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          event.status === "success"
+                            ? "bg-green-500/10 text-green-400"
+                            : event.status === "failed"
+                            ? "bg-red-500/10 text-red-400"
+                            : "bg-yellow-500/10 text-yellow-400"
+                        }`}
                       >
-                        {event.status}
-                        {event.reason && ` - ${event.reason}`}
+                        {event.status === "success" ? (
+                          <CheckCircle className="w-3.5 h-3.5" />
+                        ) : event.status === "failed" ? (
+                          <XCircle className="w-3.5 h-3.5" />
+                        ) : (
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                        )}
+                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
                       </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="divide-y divide-white/10">
+            {filteredActivityLogs.map((log) => (
+              <div key={log.id} className="p-6 hover:bg-slate-800/30 transition">
+                <div className="flex items-start justify-between">
+                  <div className="flex gap-4">
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                      <Clock className="w-5 h-5 text-blue-400" />
                     </div>
-                  </div>
-                ))
-              ) : (
-                <div className="p-12 text-center text-slate-400">
-                  No login events found
-                </div>
-              )
-            ) : filteredActivityLogs.length > 0 ? (
-              filteredActivityLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="p-6 hover:bg-slate-800/30 transition cursor-pointer"
-                  onClick={() => setExpandedLogId(expandedLogId === log.id ? null : log.id)}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="mt-1">{getActionIcon(log.action)}</div>
-                      <div className="flex-1">
-                        <p className="text-white font-medium">{log.userName}</p>
-                        <p className="text-sm text-slate-400">{log.timestamp}</p>
-                        <p className="text-white mt-2">{log.details}</p>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-white font-medium">{log.userName}</span>
+                        <span className="text-slate-500">•</span>
+                        <span className="text-xs font-mono text-slate-400">
+                          {log.timestamp}
+                        </span>
+                      </div>
+                      <p className="text-slate-300 text-sm mb-2">{log.details}</p>
+                      <div className="flex items-center gap-4">
+                        <span className="px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-[10px] font-bold uppercase tracking-wider">
+                          {log.action.replace("_", " ")}
+                        </span>
                         {log.affectedUser && (
-                          <p className="text-sm text-slate-300 mt-2">
-                            Affected User: <span className="font-medium">{log.affectedUser}</span>
-                          </p>
+                          <span className="text-xs text-slate-400">
+                            Affected User: <span className="text-slate-300">{log.affectedUser}</span>
+                          </span>
                         )}
                       </div>
                     </div>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${getStatusColor(
-                        log.status
-                      )}`}
-                    >
-                      {log.status}
-                    </span>
                   </div>
-
-                  {expandedLogId === log.id && log.previousValue && (
-                    <div className="mt-4 pt-4 border-t border-white/10 bg-slate-800/30 p-4 rounded-lg">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs font-medium text-slate-400 mb-1">Previous Value</p>
-                          <p className="text-white font-mono text-sm bg-slate-900/50 p-2 rounded">
-                            {log.previousValue}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-slate-400 mb-1">New Value</p>
-                          <p className="text-white font-mono text-sm bg-slate-900/50 p-2 rounded">
-                            {log.newValue}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${
+                      log.status === "success"
+                        ? "text-green-400"
+                        : log.status === "failed"
+                        ? "text-red-400"
+                        : "text-yellow-400"
+                    }`}
+                  >
+                    {log.status.toUpperCase()}
+                  </span>
                 </div>
-              ))
-            ) : (
-              <div className="p-12 text-center text-slate-400">
-                No activity logs found
               </div>
-            )}
+            ))}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

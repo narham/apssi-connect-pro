@@ -196,12 +196,12 @@ const SecuritySettings: React.FC = () => {
   const handleEnableTwoFactor = () => {
     if (!selectedUser) return;
 
-    const updatedSettings = settings.map((s) =>
+    const updatedSettings: SecuritySettings[] = settings.map((s) =>
       s.id === selectedUser.id
         ? {
             ...s,
             twoFactorEnabled: true,
-            twoFactorMethod: twoFactorMethod,
+            twoFactorMethod: twoFactorMethod as SecuritySettings["twoFactorMethod"],
           }
         : s
     );
@@ -215,7 +215,7 @@ const SecuritySettings: React.FC = () => {
   const handleDisableTwoFactor = () => {
     if (!selectedUser) return;
 
-    const updatedSettings = settings.map((s) =>
+    const updatedSettings: SecuritySettings[] = settings.map((s) =>
       s.id === selectedUser.id
         ? {
             ...s,
@@ -241,7 +241,7 @@ const SecuritySettings: React.FC = () => {
       return;
     }
 
-    const updatedSettings = settings.map((s) =>
+    const updatedSettings: SecuritySettings[] = settings.map((s) =>
       s.id === selectedUser.id
         ? {
             ...s,
@@ -260,7 +260,7 @@ const SecuritySettings: React.FC = () => {
   const handleRemoveIpAddress = (ip: string) => {
     if (!selectedUser) return;
 
-    const updatedSettings = settings.map((s) =>
+    const updatedSettings: SecuritySettings[] = settings.map((s) =>
       s.id === selectedUser.id
         ? {
             ...s,
@@ -282,7 +282,7 @@ const SecuritySettings: React.FC = () => {
       return;
     }
 
-    const updatedSettings = settings.map((s) =>
+    const updatedSettings: SecuritySettings[] = settings.map((s) =>
       s.id === selectedUser.id
         ? {
             ...s,
@@ -299,7 +299,7 @@ const SecuritySettings: React.FC = () => {
   const handleRemoveTrustedDevice = (device: string) => {
     if (!selectedUser) return;
 
-    const updatedSettings = settings.map((s) =>
+    const updatedSettings: SecuritySettings[] = settings.map((s) =>
       s.id === selectedUser.id
         ? {
             ...s,
@@ -319,50 +319,39 @@ const SecuritySettings: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Security Settings</h1>
-          <p className="text-slate-400">Manage 2FA, login history, and security alerts</p>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* User List */}
+      <div className="lg:col-span-1 space-y-4">
+        <div className="glass-card p-4 border border-white/10">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* User List */}
-          <div className="glass-card border border-white/10 overflow-hidden h-fit">
-            <div className="p-4 border-b border-white/10">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search users..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="divide-y divide-white/10 max-h-96 overflow-y-auto">
-              {filteredSettings.map((setting) => (
+        <div className="glass-card border border-white/10 overflow-hidden divide-y divide-white/10 h-fit max-h-[calc(100vh-250px)] overflow-y-auto">
+              {filteredSettings.map((user) => (
                 <button
-                  key={setting.id}
-                  onClick={() => setSelectedUser(setting)}
-                  className={`w-full text-left px-4 py-3 transition ${
-                    selectedUser?.id === setting.id
-                      ? "bg-blue-600/20 border-l-2 border-blue-500"
-                      : "hover:bg-slate-800/50"
+                  key={user.id}
+                  onClick={() => setSelectedUser(user)}
+                  className={`w-full p-4 text-left transition flex items-center justify-between hover:bg-slate-800/50 ${
+                    selectedUser?.id === user.id ? "bg-blue-600/10 border-l-4 border-blue-600" : ""
                   }`}
                 >
-                  <p className="text-sm font-medium text-white">{setting.userName}</p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    {setting.twoFactorEnabled ? "✓ 2FA Enabled" : "✗ 2FA Disabled"}
-                  </p>
-                  {setting.suspiciousLogins.length > 0 && (
-                    <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" />
-                      {setting.suspiciousLogins.length} suspicious
-                    </p>
+                  <div>
+                    <p className="text-white font-medium text-sm">{user.userName}</p>
+                    <p className="text-xs text-slate-400">{user.userId}</p>
+                  </div>
+                  {user.twoFactorEnabled ? (
+                    <Shield className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Shield className="w-4 h-4 text-slate-600" />
                   )}
                 </button>
               ))}
@@ -576,7 +565,6 @@ const SecuritySettings: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
 
         {/* 2FA Setup Modal */}
         {showTwoFactorModal && (
@@ -680,8 +668,7 @@ const SecuritySettings: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
-    </div>
+</div>
   );
 };
 

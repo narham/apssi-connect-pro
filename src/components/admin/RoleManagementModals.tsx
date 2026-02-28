@@ -42,7 +42,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
     { value: "provincial_admin", label: "Provincial Admin" },
     { value: "match_commissioner", label: "Match Commissioner" },
     { value: "data_operator", label: "Data Operator" },
-    { value: "scout", label: "Scout" },
+    { value: "scout", label: "Scout (Limited Access)" },
   ];
 
   const roleDescriptions: Record<string, string> = {

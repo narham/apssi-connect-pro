@@ -180,7 +180,7 @@ const roleOptions = [
   { value: "provincial_admin", label: "Provincial Admin" },
   { value: "match_commissioner", label: "Match Commissioner" },
   { value: "data_operator", label: "Data Operator" },
-  { value: "scout", label: "Scout" },
+  { value: "scout", label: "Scout (Limited Access)" },
 ];
 
 // ==================== COMPONENT ====================
@@ -333,240 +333,232 @@ const UserManagement: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">User Management</h1>
-          <p className="text-slate-400">Assign roles and manage data access restrictions</p>
+    <div className="space-y-6">
+      {/* Search */}
+      <div className="glass-card p-4 border border-white/10">
+        <div className="relative">
+          <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search users by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+          />
         </div>
+      </div>
 
-        {/* Search */}
-        <div className="glass-card p-4 mb-6 border border-white/10">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search users by name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
-            />
-          </div>
-        </div>
-
-        {/* Users List */}
-        <div className="space-y-4">
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((user) => (
+      {/* Users List */}
+      <div className="space-y-4">
+        {filteredUsers.length > 0 ? (
+          filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              className="glass-card border border-white/10 overflow-hidden"
+            >
+              {/* User Header */}
               <div
-                key={user.id}
-                className="glass-card border border-white/10 overflow-hidden"
+                className="p-6 cursor-pointer hover:bg-slate-800/30 transition"
+                onClick={() =>
+                  setExpandedUserId(expandedUserId === user.id ? null : user.id)
+                }
               >
-                {/* User Header */}
-                <div
-                  className="p-6 cursor-pointer hover:bg-slate-800/30 transition"
-                  onClick={() =>
-                    setExpandedUserId(expandedUserId === user.id ? null : user.id)
-                  }
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-white">{user.name}</h3>
-                          <p className="text-sm text-slate-400">{user.email}</p>
-                        </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">{user.name}</h3>
+                        <p className="text-sm text-slate-400">{user.email}</p>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex items-center gap-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleColor(
-                          user.role
-                        )}`}
-                      >
-                        {roleOptions.find((r) => r.value === user.role)?.label}
-                      </span>
-                      <ChevronDown
-                        className={`w-5 h-5 text-slate-400 transition ${
-                          expandedUserId === user.id ? "rotate-180" : ""
-                        }`}
-                      />
-                    </div>
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleColor(
+                        user.role
+                      )}`}
+                    >
+                      {roleOptions.find((r) => r.value === user.role)?.label}
+                    </span>
+                    <ChevronDown
+                      className={`w-5 h-5 text-slate-400 transition ${
+                        expandedUserId === user.id ? "rotate-180" : ""
+                      }`}
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* User Details */}
-                {expandedUserId === user.id && (
-                  <div className="border-t border-white/10 p-6 bg-slate-800/20">
-                    {/* Role Assignment */}
+              {/* User Details */}
+              {expandedUserId === user.id && (
+                <div className="border-t border-white/10 p-6 bg-slate-800/20">
+                  {/* Role Assignment */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                      <Lock className="w-4 h-4" /> Role Assignment
+                    </h4>
+
+                    {editingUserId === user.id ? (
+                      <div className="flex gap-4 items-end">
+                        <div className="flex-1">
+                          <label className="block text-xs font-medium text-slate-300 mb-2">
+                            Select Role
+                          </label>
+                          <select
+                            value={editingRole}
+                            onChange={(e) => setEditingRole(e.target.value)}
+                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          >
+                            {roleOptions.map((role) => (
+                              <option key={role.value} value={role.value}>
+                                {role.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <button
+                          onClick={() => saveRoleChange(user.id)}
+                          className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-medium transition flex items-center gap-2"
+                        >
+                          <Save className="w-4 h-4" />
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditingUserId(null)}
+                          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white font-medium transition flex items-center gap-2"
+                        >
+                          <X className="w-4 h-4" />
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <p className="text-white font-medium">
+                          {roleOptions.find((r) => r.value === user.role)?.label}
+                        </p>
+                        <button
+                          onClick={() => startEditing(user)}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm font-medium transition"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                          Edit Role
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Data Access Restrictions */}
+                  {canRestrictData(user.role) && (
                     <div className="mb-6">
                       <h4 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-                        <Lock className="w-4 h-4" /> Role Assignment
+                        <MapPin className="w-4 h-4" /> Data Access Restrictions
                       </h4>
 
-                      {editingUserId === user.id ? (
-                        <div className="flex gap-4 items-end">
-                          <div className="flex-1">
-                            <label className="block text-xs font-medium text-slate-300 mb-2">
-                              Select Role
-                            </label>
-                            <select
-                              value={editingRole}
-                              onChange={(e) => setEditingRole(e.target.value)}
-                              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      {/* Existing Restrictions */}
+                      {user.dataRestrictions.length > 0 && (
+                        <div className="space-y-2 mb-6">
+                          {user.dataRestrictions.map((restriction, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between bg-slate-700/50 px-4 py-3 rounded-lg border border-slate-600"
                             >
-                              {roleOptions.map((role) => (
-                                <option key={role.value} value={role.value}>
-                                  {role.label}
+                              <div className="flex items-center gap-3">
+                                <Unlock className="w-4 h-4 text-slate-400" />
+                                <span className="text-white text-sm">
+                                  {getRestrictionLabel(restriction)}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => removeDataRestriction(user.id, index)}
+                                className="p-1 hover:bg-red-600 rounded transition"
+                              >
+                                <X className="w-4 h-4 text-red-400" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add New Restriction */}
+                      {user.dataRestrictions.length < 5 && (
+                        <div className="bg-slate-700/30 p-4 rounded-lg border border-slate-600">
+                          <p className="text-xs text-slate-400 mb-4">
+                            Add data access restrictions for this user
+                          </p>
+                          <div className="grid grid-cols-3 gap-4 mb-4">
+                            <select
+                              value={restrictionType}
+                              onChange={(e) =>
+                                setRestrictionType(e.target.value as "province" | "match" | "club")
+                              }
+                              className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+                            >
+                              <option value="province">Province</option>
+                              <option value="match">Match</option>
+                              <option value="club">Club</option>
+                            </select>
+
+                            <select
+                              value={restrictionValue}
+                              onChange={(e) => setRestrictionValue(e.target.value)}
+                              className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+                            >
+                              <option value="">Select {restrictionType}...</option>
+                              {getRestrictionOptions(restrictionType).map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
                                 </option>
                               ))}
                             </select>
+
+                            <button
+                              onClick={() => addDataRestriction(user.id)}
+                              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm font-medium transition"
+                            >
+                              Add
+                            </button>
                           </div>
-                          <button
-                            onClick={() => saveRoleChange(user.id)}
-                            className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-medium transition flex items-center gap-2"
-                          >
-                            <Save className="w-4 h-4" />
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditingUserId(null)}
-                            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white font-medium transition flex items-center gap-2"
-                          >
-                            <X className="w-4 h-4" />
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between">
-                          <p className="text-white font-medium">
-                            {roleOptions.find((r) => r.value === user.role)?.label}
-                          </p>
-                          <button
-                            onClick={() => startEditing(user)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm font-medium transition"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                            Edit Role
-                          </button>
                         </div>
                       )}
                     </div>
+                  )}
 
-                    {/* Data Access Restrictions */}
-                    {canRestrictData(user.role) && (
-                      <div className="mb-6">
-                        <h4 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-                          <MapPin className="w-4 h-4" /> Data Access Restrictions
-                        </h4>
-
-                        {/* Existing Restrictions */}
-                        {user.dataRestrictions.length > 0 && (
-                          <div className="space-y-2 mb-6">
-                            {user.dataRestrictions.map((restriction, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center justify-between bg-slate-700/50 px-4 py-3 rounded-lg border border-slate-600"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <Unlock className="w-4 h-4 text-slate-400" />
-                                  <span className="text-white text-sm">
-                                    {getRestrictionLabel(restriction)}
-                                  </span>
-                                </div>
-                                <button
-                                  onClick={() => removeDataRestriction(user.id, index)}
-                                  className="p-1 hover:bg-red-600 rounded transition"
-                                >
-                                  <X className="w-4 h-4 text-red-400" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Add New Restriction */}
-                        {user.dataRestrictions.length < 5 && (
-                          <div className="bg-slate-700/30 p-4 rounded-lg border border-slate-600">
-                            <p className="text-xs text-slate-400 mb-4">
-                              Add data access restrictions for this user
-                            </p>
-                            <div className="grid grid-cols-3 gap-4 mb-4">
-                              <select
-                                value={restrictionType}
-                                onChange={(e) =>
-                                  setRestrictionType(e.target.value as "province" | "match" | "club")
-                                }
-                                className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
-                              >
-                                <option value="province">Province</option>
-                                <option value="match">Match</option>
-                                <option value="club">Club</option>
-                              </select>
-
-                              <select
-                                value={restrictionValue}
-                                onChange={(e) => setRestrictionValue(e.target.value)}
-                                className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
-                              >
-                                <option value="">Select {restrictionType}...</option>
-                                {getRestrictionOptions(restrictionType).map((option) => (
-                                  <option key={option} value={option}>
-                                    {option}
-                                  </option>
-                                ))}
-                              </select>
-
-                              <button
-                                onClick={() => addDataRestriction(user.id)}
-                                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm font-medium transition"
-                              >
-                                Add
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Info */}
-                    <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/10">
-                      <div>
-                        <p className="text-xs font-medium text-slate-400 mb-1">Joined</p>
-                        <p className="text-white">{user.joinDate}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-400 mb-1">Last Login</p>
-                        <p className="text-white">{user.lastLogin}</p>
-                      </div>
+                  {/* Info */}
+                  <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/10">
+                    <div>
+                      <p className="text-xs font-medium text-slate-400 mb-1">Joined</p>
+                      <p className="text-white">{user.joinDate}</p>
                     </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-2 mt-6 pt-6 border-t border-white/10">
-                      <button className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white font-medium transition">
-                        View Activity
-                      </button>
-                      <button
-                        onClick={() => deleteUser(user.id)}
-                        className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white font-medium transition flex items-center gap-2"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
-                      </button>
+                    <div>
+                      <p className="text-xs font-medium text-slate-400 mb-1">Last Login</p>
+                      <p className="text-white">{user.lastLogin}</p>
                     </div>
                   </div>
-                )}
-              </div>
-            ))
-          ) : (
-            <div className="glass-card p-12 border border-white/10 text-center">
-              <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-              <p className="text-slate-400">No users found</p>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 mt-6 pt-6 border-t border-white/10">
+                    <button className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white font-medium transition">
+                      View Activity
+                    </button>
+                    <button
+                      onClick={() => deleteUser(user.id)}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white font-medium transition flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          ))
+        ) : (
+          <div className="glass-card p-12 border border-white/10 text-center">
+            <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+            <p className="text-slate-400">No users found</p>
+          </div>
+        )}
       </div>
     </div>
   );
