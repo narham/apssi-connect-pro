@@ -17,6 +17,9 @@ import AdminClubs from "./pages/admin/AdminClubs";
 import AdminScouts from "./pages/admin/AdminScouts";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminSettings from "./pages/admin/AdminSettings";
+import TournamentDashboard from "./pages/admin/TournamentDashboard";
+import TournamentSchedule from "./pages/admin/TournamentSchedule";
+import TournamentBracket from "./pages/admin/TournamentBracket";
 
 const queryClient = new QueryClient();
 
