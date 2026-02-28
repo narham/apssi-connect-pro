@@ -1,4 +1,5 @@
 import cardBg from "@/assets/card-bg.png";
+import PlayerAvatarFrame from "./PlayerAvatarFrame";
 
 interface PlayerCardProps {
   name: string;
@@ -19,9 +20,9 @@ interface PlayerCardProps {
 const StatBar = ({ label, value }: { label: string; value: number }) => (
   <div className="flex items-center gap-2">
     <span className="text-[10px] font-montserrat font-semibold text-muted-foreground uppercase w-8">{label}</span>
-    <div className="flex-1 h-1 bg-secondary rounded-sm overflow-hidden">
+    <div className="flex-1 h-1.5 bg-secondary/60 rounded-sm overflow-hidden inner-shadow">
       <div
-        className="h-full gradient-line rounded-sm transition-all duration-700"
+        className="h-full gradient-line rounded-sm transition-all duration-700 ease-out"
         style={{ width: `${value}%` }}
       />
     </div>
@@ -31,38 +32,38 @@ const StatBar = ({ label, value }: { label: string; value: number }) => (
 
 const PlayerCard = ({ name, position, team, number, rating, stats }: PlayerCardProps) => {
   return (
-    <div className="relative w-[260px] group">
-      {/* Card */}
-      <div className="relative glass-card rounded-lg overflow-hidden neon-border-red">
-        {/* Card BG */}
-        <div className="absolute inset-0 opacity-30">
+    <div className="relative w-[280px] group">
+      <div className="glass-card-gradient rounded-lg overflow-hidden micro-hover relative z-0">
+        {/* Card BG texture */}
+        <div className="absolute inset-0 opacity-20 z-0">
           <img src={cardBg} alt="" className="w-full h-full object-cover" />
         </div>
 
-        {/* Content */}
-        <div className="relative p-4">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-3">
-            <div>
-              <div className="text-3xl font-oswald font-bold text-neon-red neon-glow-red">{rating}</div>
-              <div className="text-[10px] font-montserrat font-bold text-accent uppercase tracking-widest">{position}</div>
-            </div>
-            <div className="text-right">
-              <div className="text-5xl font-oswald font-black text-foreground/10">#{number}</div>
+        <div className="relative p-5 z-10">
+          {/* Header with avatar */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <PlayerAvatarFrame name={name} number={number} size="md" variant="red" />
+              <div>
+                <h3 className="text-base font-oswald font-bold text-foreground uppercase tracking-wide leading-tight">{name}</h3>
+                <p className="text-[10px] font-montserrat font-medium text-muted-foreground mt-0.5">{team}</p>
+              </div>
             </div>
           </div>
 
-          {/* Player Info */}
-          <div className="mb-4">
-            <h3 className="text-lg font-oswald font-bold text-foreground uppercase tracking-wide">{name}</h3>
-            <p className="text-xs font-montserrat text-muted-foreground">{team}</p>
+          {/* Rating & Position */}
+          <div className="flex items-end gap-3 mb-4">
+            <div className="text-4xl font-oswald font-bold text-neon-red neon-glow-red leading-none">{rating}</div>
+            <div className="glass-card rounded-sm px-2 py-0.5 mb-1">
+              <span className="text-[10px] font-montserrat font-bold text-neon-green uppercase tracking-widest relative z-10">{position}</span>
+            </div>
           </div>
 
           {/* Divider */}
-          <div className="h-[1px] gradient-line mb-3 opacity-60" />
+          <div className="h-[1px] gradient-line mb-4 opacity-50" />
 
           {/* Stats */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <StatBar label="PAC" value={stats.pace} />
             <StatBar label="SHO" value={stats.shooting} />
             <StatBar label="PAS" value={stats.passing} />
@@ -71,10 +72,10 @@ const PlayerCard = ({ name, position, team, number, rating, stats }: PlayerCardP
             <StatBar label="PHY" value={stats.physical} />
           </div>
 
-          {/* QR Placeholder */}
-          <div className="mt-4 flex items-center gap-3">
-            <div className="w-12 h-12 border border-glass-border rounded flex items-center justify-center">
-              <svg className="w-8 h-8 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor">
+          {/* QR & Verification */}
+          <div className="mt-4 pt-3 border-t border-border/30 flex items-center gap-3">
+            <div className="w-11 h-11 rounded-sm inner-shadow bg-secondary/30 flex items-center justify-center">
+              <svg className="w-7 h-7 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="2" y="2" width="8" height="8" rx="1" opacity="0.8" />
                 <rect x="14" y="2" width="8" height="8" rx="1" opacity="0.8" />
                 <rect x="2" y="14" width="8" height="8" rx="1" opacity="0.8" />
@@ -84,8 +85,8 @@ const PlayerCard = ({ name, position, team, number, rating, stats }: PlayerCardP
               </svg>
             </div>
             <div>
-              <p className="text-[9px] font-montserrat text-muted-foreground uppercase tracking-wider">E-Player Card</p>
-              <p className="text-[10px] font-montserrat font-semibold text-accent">APSSI Verified</p>
+              <p className="text-[9px] font-montserrat font-medium text-muted-foreground uppercase tracking-wider">E-Player Card</p>
+              <p className="text-[10px] font-montserrat font-semibold text-neon-green neon-glow-green">APSSI Verified ✓</p>
             </div>
           </div>
         </div>
