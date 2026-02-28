@@ -6,52 +6,63 @@
 
 @layer base {
   :root {
-    --background: 220 30% 7%;
+    /* Core Palette */
+    --background: 216 72% 14%;
     --foreground: 210 40% 95%;
 
-    --card: 220 30% 11%;
+    --card: 216 60% 18%;
     --card-foreground: 210 40% 95%;
 
-    --popover: 220 30% 11%;
+    --popover: 216 60% 16%;
     --popover-foreground: 210 40% 95%;
 
-    --primary: 0 80% 55%;
+    /* Primary = Navy Blue #0A1F3C */
+    --primary: 216 72% 14%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 50% 18%;
+    /* Secondary = Dark Blue #102D5E */
+    --secondary: 216 71% 22%;
     --secondary-foreground: 210 40% 95%;
 
-    --muted: 220 30% 15%;
+    --muted: 216 40% 20%;
     --muted-foreground: 215 20% 55%;
 
-    --accent: 145 70% 45%;
+    /* Accent = Grass Green #00C853 */
+    --accent: 151 100% 39%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    /* Tactical Red #FF1744 */
+    --destructive: 349 100% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 30% 18%;
-    --input: 220 30% 18%;
-    --ring: 0 80% 55%;
+    --border: 216 40% 22%;
+    --input: 216 40% 22%;
+    --ring: 349 100% 55%;
 
-    --radius: 0.25rem;
+    --radius: 0.375rem;
 
-    /* Custom tokens */
-    --navy: 220 40% 13%;
-    --navy-deep: 220 35% 8%;
-    --neon-red: 0 90% 58%;
-    --neon-green: 145 80% 48%;
-    --glass: 220 30% 15%;
-    --glass-border: 220 30% 22%;
+    /* Extended tokens */
+    --navy: 216 72% 14%;
+    --navy-deep: 216 72% 9%;
+    --navy-surface: 216 60% 18%;
+    --neon-red: 349 100% 55%;
+    --neon-green: 151 100% 39%;
+    --tactical-red: 349 100% 55%;
+    --grass-green: 151 100% 39%;
 
-    --sidebar-background: 220 30% 9%;
+    /* Glass tokens */
+    --glass-bg: 0 0% 100%;
+    --glass-border: 0 0% 100%;
+
+    /* Sidebar */
+    --sidebar-background: 216 72% 11%;
     --sidebar-foreground: 210 40% 95%;
-    --sidebar-primary: 0 80% 55%;
+    --sidebar-primary: 349 100% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 30% 15%;
+    --sidebar-accent: 216 40% 20%;
     --sidebar-accent-foreground: 210 40% 95%;
-    --sidebar-border: 220 30% 18%;
-    --sidebar-ring: 0 80% 55%;
+    --sidebar-border: 216 40% 22%;
+    --sidebar-ring: 349 100% 55%;
   }
 }
 
@@ -62,6 +73,8 @@
 
   body {
     @apply bg-background text-foreground font-montserrat antialiased;
+    background: linear-gradient(180deg, hsl(216 72% 9%) 0%, hsl(216 72% 14%) 100%);
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -69,31 +82,144 @@
   }
 }
 
-@layer utilities {
+@layer components {
+  /* ── Glassmorphism System ── */
   .glass-panel {
-    @apply bg-glass/60 backdrop-blur-xl border border-glass-border/50;
+    background: hsla(var(--glass-bg) / 0.06);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid hsla(var(--glass-border) / 0.08);
+    box-shadow:
+      inset 0 1px 0 0 hsla(var(--glass-border) / 0.1),
+      0 4px 30px hsla(var(--navy-deep) / 0.4);
   }
 
   .glass-card {
-    @apply bg-glass/40 backdrop-blur-lg border border-glass-border/40 shadow-lg;
+    background: hsla(var(--glass-bg) / 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsla(var(--glass-border) / 0.07);
+    box-shadow:
+      inset 0 1px 0 0 hsla(var(--glass-border) / 0.08),
+      inset 0 -1px 0 0 hsla(var(--navy-deep) / 0.3),
+      0 8px 32px hsla(var(--navy-deep) / 0.5);
+    position: relative;
+    overflow: hidden;
   }
 
+  /* Light reflection overlay */
+  .glass-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(
+      180deg,
+      hsla(var(--glass-bg) / 0.06) 0%,
+      hsla(var(--glass-bg) / 0) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Soft gradient border variant */
+  .glass-card-gradient {
+    background: hsla(var(--glass-bg) / 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      inset 0 1px 0 0 hsla(var(--glass-border) / 0.08),
+      0 8px 32px hsla(var(--navy-deep) / 0.5);
+  }
+
+  .glass-card-gradient::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsla(var(--neon-red) / 0.4) 0%,
+      hsla(var(--glass-border) / 0.08) 40%,
+      hsla(var(--glass-border) / 0.08) 60%,
+      hsla(var(--neon-green) / 0.4) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .glass-card-gradient::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(
+      180deg,
+      hsla(var(--glass-bg) / 0.06) 0%,
+      hsla(var(--glass-bg) / 0) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── Neon Border Effects ── */
   .neon-border-red {
-    box-shadow: 0 0 8px hsl(var(--neon-red) / 0.4), inset 0 0 8px hsl(var(--neon-red) / 0.05);
-    border-color: hsl(var(--neon-red) / 0.6);
+    box-shadow:
+      0 0 12px hsla(var(--neon-red) / 0.35),
+      0 0 40px hsla(var(--neon-red) / 0.1),
+      inset 0 0 12px hsla(var(--neon-red) / 0.05),
+      inset 0 1px 0 0 hsla(var(--glass-border) / 0.1);
+    border-color: hsla(var(--neon-red) / 0.5);
   }
 
   .neon-border-green {
-    box-shadow: 0 0 8px hsl(var(--neon-green) / 0.4), inset 0 0 8px hsl(var(--neon-green) / 0.05);
-    border-color: hsl(var(--neon-green) / 0.6);
+    box-shadow:
+      0 0 12px hsla(var(--neon-green) / 0.35),
+      0 0 40px hsla(var(--neon-green) / 0.1),
+      inset 0 0 12px hsla(var(--neon-green) / 0.05),
+      inset 0 1px 0 0 hsla(var(--glass-border) / 0.1);
+    border-color: hsla(var(--neon-green) / 0.5);
   }
 
+  /* ── Micro-animation utilities ── */
+  .micro-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .micro-hover:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow:
+      0 12px 40px hsla(var(--navy-deep) / 0.6),
+      inset 0 1px 0 0 hsla(var(--glass-border) / 0.15);
+  }
+
+  .micro-hover:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .micro-tap {
+    @apply transition-transform duration-150 ease-out active:scale-95;
+  }
+}
+
+@layer utilities {
   .neon-glow-red {
-    text-shadow: 0 0 20px hsl(var(--neon-red) / 0.6);
+    text-shadow: 0 0 20px hsla(var(--neon-red) / 0.6), 0 0 60px hsla(var(--neon-red) / 0.2);
   }
 
   .neon-glow-green {
-    text-shadow: 0 0 20px hsl(var(--neon-green) / 0.6);
+    text-shadow: 0 0 20px hsla(var(--neon-green) / 0.6), 0 0 60px hsla(var(--neon-green) / 0.2);
   }
 
   .text-gradient-brand {
@@ -103,5 +229,32 @@
 
   .gradient-line {
     background: linear-gradient(90deg, hsl(var(--neon-red)), hsl(var(--neon-green)));
+  }
+
+  .gradient-line-vertical {
+    background: linear-gradient(180deg, hsl(var(--neon-red)), hsl(var(--neon-green)));
+  }
+
+  .bg-navy-gradient {
+    background: linear-gradient(180deg, hsl(var(--navy-deep)) 0%, hsl(var(--navy)) 100%);
+  }
+
+  .inner-shadow {
+    box-shadow: inset 0 2px 8px hsla(var(--navy-deep) / 0.6), inset 0 -1px 0 hsla(var(--glass-border) / 0.06);
+  }
+
+  /* Avatar frame specific */
+  .avatar-ring-red {
+    box-shadow:
+      0 0 0 2px hsl(var(--navy-deep)),
+      0 0 0 4px hsl(var(--neon-red)),
+      0 0 16px hsla(var(--neon-red) / 0.4);
+  }
+
+  .avatar-ring-green {
+    box-shadow:
+      0 0 0 2px hsl(var(--navy-deep)),
+      0 0 0 4px hsl(var(--neon-green)),
+      0 0 16px hsla(var(--neon-green) / 0.4);
   }
 }
