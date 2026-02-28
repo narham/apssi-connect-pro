@@ -39,6 +39,12 @@ const mainNav = [
   { title: "Reports", url: "/admin/reports", icon: FileText },
 ];
 
+const tournamentNav = [
+  { title: "Control Center", url: "/admin/tournament", icon: Signal },
+  { title: "Schedule", url: "/admin/tournament/schedule", icon: Calendar },
+  { title: "Bracket & Awards", url: "/admin/tournament/bracket", icon: Trophy },
+];
+
 const systemNav = [
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
