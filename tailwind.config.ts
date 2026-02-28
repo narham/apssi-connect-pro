@@ -121,6 +121,12 @@ export default {
           "0%, 100%": { boxShadow: "0 0 8px hsla(var(--neon-green) / 0.4)" },
           "50%": { boxShadow: "0 0 20px hsla(var(--neon-green) / 0.7)" },
         },
+        "scan-line": {
+          "0%": { top: "10%", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          "100%": { top: "90%", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -136,6 +142,7 @@ export default {
         "pulse-neon": "pulse-neon 2s ease-in-out infinite",
         "slide-up": "slide-up 0.5s ease-out forwards",
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
+        "scan-line": "scan-line 2s ease-in-out infinite",
       },
     },
   },
