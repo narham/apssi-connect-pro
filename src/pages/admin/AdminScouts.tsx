@@ -1,4 +1,4 @@
-import { Eye, Search, Shield, Star, MapPin, CheckCircle2, Clock } from "lucide-react";
+import { Eye, Search, Shield, Star, MapPin, CheckCircle2, Clock, XCircle } from "lucide-react";
 
 const scouts = [
   { name: "Coach Hendrik", level: "Provincial", province: "DKI Jakarta", playersWatched: 45, reports: 28, status: "active", rating: 4.8 },
