@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { AuthError, Session, User } from '@supabase/supabase-js';
 
 export interface AuthResponse {
@@ -39,9 +39,9 @@ export const authService = {
    */
   async getUserProfile(userId: string) {
     const { data, error } = await supabase
-      .from('users')
+      .from('user_roles')
       .select('*')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single();
     
     if (error) throw error;

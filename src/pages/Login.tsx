@@ -31,10 +31,15 @@ const Login = () => {
       if (user) {
         toast.success("Identity Verified. Access Granted.");
         // Check role and redirect
-        const profile = await authService.getUserProfile(user.id);
-        if (profile.role === 'ADMIN' || profile.role === 'SCOUT' || profile.role === 'REGISTRAR') {
-          navigate("/admin");
-        } else {
+        try {
+          const profile = await authService.getUserProfile(user.id);
+          const adminRoles = ['super_admin', 'provincial_admin', 'match_commissioner', 'data_operator', 'scout'];
+          if (adminRoles.includes(profile.role)) {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
+        } catch {
           navigate("/");
         }
       }

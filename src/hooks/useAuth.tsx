@@ -28,7 +28,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (initialSession?.user) {
         try {
           const profile = await authService.getUserProfile(initialSession.user.id);
-          setRole(profile.role);
+          const roleMap: Record<string, 'ADMIN' | 'SCOUT' | 'REGISTRAR' | 'VIEWER'> = {
+            'super_admin': 'ADMIN',
+            'provincial_admin': 'ADMIN',
+            'match_commissioner': 'REGISTRAR',
+            'data_operator': 'REGISTRAR',
+            'scout': 'SCOUT',
+          };
+          setRole(roleMap[profile.role] || 'VIEWER');
         } catch (err) {
           console.error("Failed to load user role:", err);
         }
@@ -44,8 +51,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(currentSession?.user ?? null);
       
       if (currentSession?.user) {
-        const profile = await authService.getUserProfile(currentSession.user.id);
-        setRole(profile.role);
+        try {
+          const profile = await authService.getUserProfile(currentSession.user.id);
+          const roleMap: Record<string, 'ADMIN' | 'SCOUT' | 'REGISTRAR' | 'VIEWER'> = {
+            'super_admin': 'ADMIN',
+            'provincial_admin': 'ADMIN',
+            'match_commissioner': 'REGISTRAR',
+            'data_operator': 'REGISTRAR',
+            'scout': 'SCOUT',
+          };
+          setRole(roleMap[profile.role] || 'VIEWER');
+        } catch {
+          setRole('VIEWER');
+        }
       } else {
         setRole(null);
       }

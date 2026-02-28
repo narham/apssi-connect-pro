@@ -1,8 +1,9 @@
-import { supabase, Database } from '../lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
-export type PlayerRow = Database['public']['Tables']['players']['Row'];
-export type PlayerInsert = Database['public']['Tables']['players']['Insert'];
-export type PlayerUpdate = Database['public']['Tables']['players']['Update'];
+export type PlayerRow = Tables<'players'>;
+export type PlayerInsert = TablesInsert<'players'>;
+export type PlayerUpdate = TablesUpdate<'players'>;
 
 export const playerService = {
   /**
