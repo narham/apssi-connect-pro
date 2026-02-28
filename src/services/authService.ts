@@ -42,9 +42,10 @@ export const authService = {
       .from('user_roles')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
     
     if (error) throw error;
+    if (!data) throw new Error('No role assigned');
     return data;
   },
 
