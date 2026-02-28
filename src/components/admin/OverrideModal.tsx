@@ -28,7 +28,7 @@ const OverrideModal = ({ matchId, homeTeam, awayTeam, currentStats, onSave, onCl
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedField | !reason.trim()) {
+    if (!selectedField || !reason.trim()) {
       toast.error("Please select a field and provide a reason");
       return;
     }
