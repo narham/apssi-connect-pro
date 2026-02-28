@@ -110,6 +110,35 @@ export function AdminSidebar() {
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] font-montserrat font-bold text-muted-foreground uppercase tracking-widest">
+            Tournament Ops
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {tournamentNav.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                  >
+                    <NavLink
+                      to={item.url}
+                      end={item.url === "/admin/tournament"}
+                      className="hover:bg-muted/50"
+                      activeClassName="bg-destructive/10 text-destructive font-medium"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span className="font-montserrat text-sm">{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[10px] font-montserrat font-bold text-muted-foreground uppercase tracking-widest">
             System
           </SidebarGroupLabel>
           <SidebarGroupContent>

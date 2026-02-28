@@ -45,6 +45,9 @@ const App = () => (
             <Route path="scouts" element={<AdminScouts />} />
             <Route path="reports" element={<AdminReports />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="tournament" element={<TournamentDashboard />} />
+            <Route path="tournament/schedule" element={<TournamentSchedule />} />
+            <Route path="tournament/bracket" element={<TournamentBracket />} />
           </Route>
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
