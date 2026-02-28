@@ -7,6 +7,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import ECardDashboard from "./pages/ECardDashboard";
 import IdentityVerification from "./pages/IdentityVerification";
 import MatchStatistics from "./pages/MatchStatistics";
@@ -43,6 +44,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/e-card" element={<ECardDashboard />} />
             <Route path="/register" element={<IdentityVerification />} />
             <Route path="/stats" element={<MatchStatistics />} />

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Loader2, Fingerprint } from 'lucide-react';
@@ -15,6 +15,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, loading, role } = useAuth();
   const location = useLocation();
+  const hasToasted = useRef(false);
+
+  const isUnauthorized = !loading && user && requiredRoles && role && !requiredRoles.includes(role);
+
+  useEffect(() => {
+    if (isUnauthorized && !hasToasted.current) {
+      hasToasted.current = true;
+      toast.error("Unauthorized Access. Insufficient Permissions.");
+    }
+  }, [isUnauthorized]);
 
   if (loading) {
     return (
@@ -33,14 +43,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // 1. Not Authenticated
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // 2. Role Authorization
-  if (requiredRoles && role && !requiredRoles.includes(role)) {
-    toast.error("Unauthorized Access. Insufficient Permissions.");
+  if (isUnauthorized) {
     return <Navigate to="/" replace />;
   }
 
