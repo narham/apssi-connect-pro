@@ -20,6 +20,9 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import TournamentDashboard from "./pages/admin/TournamentDashboard";
 import TournamentSchedule from "./pages/admin/TournamentSchedule";
 import TournamentBracket from "./pages/admin/TournamentBracket";
+import TournamentSetup from "./pages/admin/TournamentSetup";
+import AdminMatchData from "./pages/admin/AdminMatchData";
+import RoleManagement from "./pages/admin/RoleManagement";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +51,9 @@ const App = () => (
             <Route path="tournament" element={<TournamentDashboard />} />
             <Route path="tournament/schedule" element={<TournamentSchedule />} />
             <Route path="tournament/bracket" element={<TournamentBracket />} />
+            <Route path="tournament/setup" element={<TournamentSetup />} />
+            <Route path="match-data" element={<AdminMatchData />} />
+            <Route path="roles" element={<RoleManagement />} />
           </Route>
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

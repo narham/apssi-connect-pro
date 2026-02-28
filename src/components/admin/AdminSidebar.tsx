@@ -37,12 +37,14 @@ const mainNav = [
   { title: "Clubs", url: "/admin/clubs", icon: Building2 },
   { title: "Scouts", url: "/admin/scouts", icon: Eye },
   { title: "Reports", url: "/admin/reports", icon: FileText },
+  { title: "Match Data", url: "/admin/match-data", icon: BarChart3 },
 ];
 
 const tournamentNav = [
   { title: "Control Center", url: "/admin/tournament", icon: Signal },
   { title: "Schedule", url: "/admin/tournament/schedule", icon: Calendar },
   { title: "Bracket & Awards", url: "/admin/tournament/bracket", icon: Trophy },
+  { title: "Setup", url: "/admin/tournament/setup", icon: Trophy },
 ];
 
 const systemNav = [
