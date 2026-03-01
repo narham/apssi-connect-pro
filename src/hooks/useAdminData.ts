@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { playerService } from '@/services/playerService';
 
 // ── Dashboard Stats ──
 export const useDashboardStats = () => {
@@ -77,23 +78,99 @@ export const useRecentActivity = () => {
   });
 };
 
-// ── Players List ──
-export const usePlayers = (searchQuery?: string) => {
+// ── Players List (paginated, filterable) ──
+export const usePlayers = (opts?: {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  const search = opts?.search ?? '';
+  const status = opts?.status ?? 'ALL';
+  const page = opts?.page ?? 0;
+  const limit = opts?.limit ?? 20;
+
   return useQuery({
-    queryKey: ['admin', 'players', searchQuery],
+    queryKey: ['admin', 'players', search, status, page, limit],
     queryFn: async () => {
       let query = supabase
         .from('players')
-        .select('id, full_name, nik, birth_date, birth_place, club_id, verification_status, consistency_score, photo_url, created_at, clubs(name, province_id, provinces:province_id(name))')
+        .select('id, full_name, nik, birth_date, birth_place, club_id, verification_status, consistency_score, photo_url, created_at, clubs(name, province_id, provinces:province_id(name))', { count: 'exact' })
         .order('created_at', { ascending: false });
 
-      if (searchQuery) {
-        query = query.or(`full_name.ilike.%${searchQuery}%,nik.ilike.%${searchQuery}%`);
+      if (search) {
+        query = query.or(`full_name.ilike.%${search}%,nik.ilike.%${search}%`);
       }
 
-      const { data, error } = await query;
+      if (status && status !== 'ALL') {
+        query = query.eq('verification_status', status);
+      }
+
+      query = query.range(page * limit, (page + 1) * limit - 1);
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+      return { data: data ?? [], count: count ?? 0 };
+    },
+    staleTime: 15_000,
+  });
+};
+
+// ── Player Detail ──
+export const usePlayerDetail = (playerId: string | null) => {
+  return useQuery({
+    queryKey: ['admin', 'player-detail', playerId],
+    queryFn: () => playerService.getPlayerById(playerId!),
+    enabled: !!playerId,
+  });
+};
+
+// ── Verification Players (for Verification Center) ──
+export const useVerificationPlayers = () => {
+  return useQuery({
+    queryKey: ['admin', 'verification-players'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('players')
+        .select(`
+          id, full_name, nik, birth_date, birth_place, club_id, verification_status,
+          consistency_score, dukcapil_match_score, face_match_confidence, dukcapil_status,
+          is_over_age, photo_url, created_at, parent_name, kk_number,
+          clubs(name),
+          verification_logs(id, action_type, old_status, new_status, reason, created_at, admin_id)
+        `)
+        .eq('verification_status', 'MANUAL REVIEW')
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
       return data ?? [];
+    },
+    staleTime: 15_000,
+  });
+};
+
+// ── Verification Stats ──
+export const useVerificationStats = () => {
+  return useQuery({
+    queryKey: ['admin', 'verification-stats'],
+    queryFn: async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayISO = today.toISOString();
+
+      const [pending, approvedToday, rejectedToday, highRisk] = await Promise.all([
+        supabase.from('players').select('id', { count: 'exact', head: true }).eq('verification_status', 'MANUAL REVIEW'),
+        supabase.from('verification_logs').select('id', { count: 'exact', head: true }).eq('new_status', 'VERIFIED').gte('created_at', todayISO),
+        supabase.from('verification_logs').select('id', { count: 'exact', head: true }).eq('new_status', 'REJECTED').gte('created_at', todayISO),
+        supabase.from('players').select('id', { count: 'exact', head: true }).eq('verification_status', 'MANUAL REVIEW').lt('consistency_score', 40),
+      ]);
+
+      return {
+        pending: pending.count ?? 0,
+        approvedToday: approvedToday.count ?? 0,
+        rejectedToday: rejectedToday.count ?? 0,
+        highRisk: highRisk.count ?? 0,
+      };
     },
     staleTime: 15_000,
   });
@@ -111,7 +188,6 @@ export const useClubs = () => {
 
       if (error) throw error;
 
-      // Get player counts per club
       const { data: playerCounts } = await supabase
         .from('players')
         .select('club_id');
