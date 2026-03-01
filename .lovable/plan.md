@@ -1,91 +1,88 @@
 
 
-# Auth Module Fixes
+# Player Module Review and Refinement
 
-## Overview
-Fix 9 identified issues in the authentication module covering security, correctness, and UX gaps.
+## Problems Found
 
-## Changes
+### AdminPlayers.tsx
+1. **No player detail view** -- "View Detail" just shows a toast instead of opening a real detail panel
+2. **No status filter** -- can only search by name/NIK, no way to filter by VERIFIED / PENDING / REJECTED
+3. **No pagination** -- loads all players at once, will break at scale
+4. **Approve/Reject skip audit log** -- calls raw `supabase.update()` instead of using `playerService.updateVerificationStatus()`, so no verification_logs are created
+5. **Action menu never closes** -- clicking outside doesn't dismiss it
+6. **"Register Player" button is non-functional**
+7. **Unused imports** -- `Filter`, `Edit`, `UserX`, `Trash2`, `formatDistanceToNow` are imported but never used
+8. **Debounce uses global `window` hack** instead of a proper ref/timeout pattern
 
-### 1. Delete `src/lib/supabase.ts`
-Remove the legacy client file that uses wrong env var names and hardcoded fallback credentials. Update any remaining imports to use `@/integrations/supabase/client`.
+### AdminVerification.tsx
+9. **Entirely hardcoded mock data** (745 lines) -- not connected to the database at all; stats, queue, and actions all operate on local state
 
-### 2. Fix auth listener ordering in `useAuth.tsx`
-Register `onAuthStateChange` BEFORE calling `getSession()` to prevent missed auth events during initialization.
+### playerService.ts
+10. **Exists but unused** -- AdminPlayers duplicates its logic with raw Supabase calls
 
-### 3. Extract shared role map
-Create a `src/constants/roles.ts` file with the role mapping constant, and import it in `useAuth.tsx` and `Login.tsx` to eliminate duplication.
+## Plan
 
-### 4. Fix RLS policy types (database migration)
-Change all the "Authenticated users can read..." SELECT policies from RESTRICTIVE to PERMISSIVE on tables: `clubs`, `match_events`, `matches`, `players`, `provinces`, `teams`, `tournaments`, `verification_logs`, and `user_roles` (own-row read).
+### 1. Refactor AdminPlayers.tsx
+- **Add status filter tabs** (All / Pending / Verified / Rejected) using the existing status values
+- **Add pagination** (page-based, 20 per page) to `usePlayers` hook and the table footer
+- **Wire approve/reject through `playerService`** so verification_logs are created automatically
+- **Build a Player Detail slide-out panel** (Dialog) showing full player info, club, scores, and verification history when "View Detail" is clicked
+- **Fix action menu** -- add a click-outside handler to dismiss
+- **Clean up unused imports**
+- **Replace window-based debounce** with a `useRef` timeout pattern
+- **Remove non-functional "Register Player" button** (registration happens via the `/register` flow)
 
-### 5. Add password reset flow
-- Add a "Forgot Password" link on the Login page that triggers `resetPasswordForEmail`
-- Create a `/reset-password` page that reads the recovery token and lets users set a new password
+### 2. Connect AdminVerification.tsx to live data
+- Replace the 186-line `initialVerificationRequests` mock array with a query from the `players` table filtered to `verification_status = 'MANUAL REVIEW'`
+- Replace hardcoded stats with live counts from the database
+- Wire approve/reject/reupload actions to `playerService.updateVerificationStatus()` so changes persist and audit logs are created
+- Keep the existing UI layout (document viewer, face match ring, audit trail) but feed it real data from `verification_logs`
 
-### 6. Fix ProtectedRoute toast spam
-Move the unauthorized toast into a `useEffect` so it only fires once, not on every re-render.
+### 3. Enhance `usePlayers` hook in useAdminData.ts
+- Add `statusFilter` and `page`/`limit` parameters
+- Return `{ data, count, isLoading }` to support pagination footer
+- Add a new `usePlayerDetail(id)` hook that fetches a single player with club, team, and verification_logs
 
-### 7. Redirect back after login
-Read `location.state.from` in `Login.tsx` and navigate there after successful authentication instead of always going to `/admin` or `/`.
-
-### 8. Fix role fallback inconsistency
-Standardize error handling: if role fetch fails, default to `null` in both code paths (init and listener) so the user is treated as unauthenticated-without-role consistently. Let `ProtectedRoute` handle the redirect.
-
-## Files to modify
-- **Delete**: `src/lib/supabase.ts`
-- **Create**: `src/constants/roles.ts`
-- **Create**: `src/pages/ResetPassword.tsx`
-- **Edit**: `src/hooks/useAuth.tsx` (listener order, shared role map, consistent fallback)
-- **Edit**: `src/pages/Login.tsx` (redirect-back, forgot password link, shared role map)
-- **Edit**: `src/components/ProtectedRoute.tsx` (toast in useEffect)
-- **Edit**: `src/App.tsx` (add `/reset-password` route)
-- **Edit**: `src/services/playerService.ts` (if it imports from `lib/supabase`)
-- **Migration**: Fix restrictive SELECT policies to permissive
+### 4. Add `useVerificationPlayers` hook
+- New query hook specifically for the verification page: fetches players with `MANUAL REVIEW` status plus their verification_logs and club names
 
 ## Technical Details
 
-### Role constants file
+### Updated usePlayers hook signature
 ```typescript
-export const DB_TO_UI_ROLE_MAP: Record<string, 'ADMIN' | 'SCOUT' | 'REGISTRAR' | 'VIEWER'> = {
-  super_admin: 'ADMIN',
-  provincial_admin: 'ADMIN',
-  match_commissioner: 'REGISTRAR',
-  data_operator: 'REGISTRAR',
-  scout: 'SCOUT',
-};
-
-export const ADMIN_DB_ROLES = ['super_admin', 'provincial_admin', 'match_commissioner', 'data_operator', 'scout'];
+export const usePlayers = (opts?: {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}) => { ... }
 ```
 
-### Auth listener fix (useAuth.tsx)
+### New usePlayerDetail hook
 ```typescript
-useEffect(() => {
-  // 1. Set up listener FIRST
-  const { data: { subscription } } = authService.onAuthStateChange(async (event, currentSession) => {
-    setSession(currentSession);
-    setUser(currentSession?.user ?? null);
-    if (currentSession?.user) {
-      // fetch role...
-    } else {
-      setRole(null);
-    }
-    setLoading(false);
+export const usePlayerDetail = (playerId: string | null) =>
+  useQuery({
+    queryKey: ['admin', 'player-detail', playerId],
+    queryFn: () => playerService.getPlayerById(playerId!),
+    enabled: !!playerId,
   });
-
-  // 2. THEN check initial session
-  authService.getSession().then(/* ... */);
-
-  return () => subscription.unsubscribe();
-}, []);
 ```
 
-### RLS migration SQL
-```sql
--- Drop restrictive SELECT policies and recreate as permissive
--- Example for each table:
-DROP POLICY IF EXISTS "Authenticated users can read clubs" ON public.clubs;
-CREATE POLICY "Authenticated users can read clubs"
-  ON public.clubs FOR SELECT TO authenticated USING (true);
--- Repeat for all 8 tables...
-```
+### Player Detail Dialog
+A modal/dialog showing:
+- Player photo + name + club
+- NIK, birth date, birth place, parent name, KK number
+- Verification status + consistency/dukcapil/face match scores
+- Verification history timeline from `verification_logs`
+
+### AdminVerification live data flow
+- Query: `players` WHERE `verification_status = 'MANUAL REVIEW'`, joined with `clubs(name)` and `verification_logs(*)`
+- Stats: count queries for pending, today's approved, today's rejected, and high-risk (consistency_score < 40)
+- Actions call `playerService.updateVerificationStatus()` which handles both the player update and the audit log insert
+
+## Files to modify
+- **Edit**: `src/hooks/useAdminData.ts` -- add pagination, status filter, usePlayerDetail, useVerificationPlayers
+- **Edit**: `src/pages/admin/AdminPlayers.tsx` -- full refactor with filters, pagination, detail dialog, proper service usage
+- **Edit**: `src/pages/admin/AdminVerification.tsx` -- replace mock data with live queries
+- **Edit**: `src/services/playerService.ts` -- minor cleanup (no breaking changes)
+
